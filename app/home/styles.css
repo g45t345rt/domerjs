@@ -1,0 +1,113 @@
+.home {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.logo {
+  margin-top: 50px;
+}
+
+.title {
+  font-size: 50px;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+.slogan {
+  margin-top: 10px;
+  font-size: 40px;
+  font-weight: 300;
+  max-width: 600px;
+  text-align: center;
+}
+
+/* Features */
+.features {
+  display: flex;
+}
+
+.featureItem {
+  max-width: 300px;
+  text-align: center;
+  margin-right: 50px;
+}
+
+.featureItem:last-child {
+  margin-right: 0;
+}
+
+.featureTitle {
+  font-weight: bold;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.featureDescription {
+  font-weight: 300;
+  line-height: 18px;
+}
+
+/* Links */
+.links {
+  padding: 70px 0;
+  display: flex;
+  align-items: center;
+}
+
+.link {
+  text-decoration: none;
+  color: black;
+  font-size: 18px;
+  border-radius: 20px;
+  padding: 10px 20px;
+  margin-right: 20px;
+  cursor: pointer;
+  display: inline-flex;
+  border: thin solid black;
+}
+
+.link:hover {
+  transform: scale(1.02);
+  transition: all 0.2s ease-in-out;
+}
+
+.link:last-child {
+  margin-right: 0;
+}
+
+.docLink::before {
+  content: '';
+  background-image: url('../images/book.svg');
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  display: inline-block;
+  background-size: cover;
+}
+
+.exaLink::before {
+  content: '';
+  background-image: url('../images/codesandbox.svg');
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  display: inline-block;
+  background-size: cover;
+}
+
+.githubLink {
+  background-color: #d8eaec;
+  font-weight: bold;
+  border: none;
+}
+
+.githubLink::before {
+  content: '';
+  background-image: url('../images/github.svg');
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  display: inline-block;
+  background-size: cover;
+}

@@ -1,0 +1,27 @@
+{
+  "name": "domer",
+  "version": "0.0.1",
+  "description": "JavaScript library for creating declarative user interfaces",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "app": "parcel ./app/index.html"
+  },
+  "author": "Fred",
+  "license": "MIT",
+  "devDependencies": {
+    "parcel-bundler": "^1.12.4",
+    "autoprefixer": "^9.0.1",
+    "postcss-modules": "^3.2.2"
+  },
+  "dependencies": {
+    "feather-icons": "^4.28.0",
+    "normalize.css": "^8.0.1",
+    "pretty": "^2.0.0",
+    "remarkable": "^2.0.1",
+    "shortid": "^2.2.16"
+  },
+  "alias": {
+    "domer": "./src/index.js"
+  }
+}
