@@ -108,4 +108,4 @@ const app = {
   }
 }
 
-createApp(app, document.getElementById('app'), {})
+createApp(app, document.getElementById('app'))

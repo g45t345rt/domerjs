@@ -40,4 +40,4 @@ const app = {
   render: { title, todoInput, list, stats }
 }
 
-createApp(app, document.getElementById('app'), {})
+createApp(app, document.getElementById('app'))

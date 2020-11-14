@@ -51,4 +51,4 @@ const ssr = {
   }
 }
 
-createApp(ssr, document.getElementById('app'), {})
+createApp(ssr, document.getElementById('app'))

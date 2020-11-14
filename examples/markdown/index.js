@@ -61,4 +61,4 @@ const editor = {
   ]
 }
 
-createApp(editor, document.getElementById('app'), {})
+createApp(editor, document.getElementById('app'))

@@ -15,6 +15,7 @@ window.styles = styles
 
 const { cl, routing } = domerjs
 
+/*
 const router = routing.router(function (path) {
   const root = (subPath) => `/examples${subPath}`
   const relativePath = path.replace('/examples', '')
@@ -27,7 +28,7 @@ const router = routing.router(function (path) {
   if (relativePath === '/router') return editor(exRouter)
   //if (path === root('/ssr')) return ssr
   return null
-})
+})*/
 
 const inputTitle = {
   tag: 'h3',
@@ -126,8 +127,7 @@ const examples = {
   tag: 'div',
   props: {
     id: 'app_example'
-  },
-  render: router
+  }
 }
 
 export default examples

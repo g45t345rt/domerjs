@@ -1,3 +1,6 @@
+let basename = ''
+
+/*
 const router = (func) => ({
   router: true,
   tag: 'div',
@@ -11,12 +14,42 @@ const router = (func) => ({
       this.update()
     }
   }
-})
+})*/
 
-function pushRoute (entry, path) {
-  window.history.pushState({ path }, '', path)
-  const router = entry.getFirstParent((parent) => parent.router === true)
-  if (router) router.update()
+function routeMatchArray (paths) {
+  return paths.some((props) => routeMatch(props))
+}
+
+function routeMatch (props) {
+  if (typeof props === 'string') return routeMatch({ path: props })
+  if (Array.isArray(props)) return routeMatchArray(props)
+
+  const { path, exact = true } = props
+
+  const { pathname } = window.location
+  if (!pathname.startsWith(basename)) return false
+  const currentPath = pathname.replace(basename, '')
+
+  if (exact) return currentPath === path
+  return currentPath.startsWith(path)
+}
+
+const setBaseroute = (base) => basename = base
+
+function pushRoute (path) {
+  const newPath = `${basename}${path}`
+  window.history.pushState({ path: newPath }, '', newPath)
+  window.dispatchEvent(new Event('popstate'))
+  //const router = entry.getFirstParent((parent) => parent.router === true)
+  //if (router) router.update()
+
+  // Scroll to tag if any 
+  const hashIndex = path.indexOf('#')
+  if (hashIndex !== -1) {
+    const hash = path.substring(hashIndex + 1)
+    const element = document.getElementById(hash)
+    if (element) window.scrollTo(0, element.offsetTop)
+  }
 }
 
 const link = (href, text, props) => ({
@@ -26,23 +59,18 @@ const link = (href, text, props) => ({
   events: {
     click: function (e) {
       e.preventDefault()
-      pushRoute(this, href)
-
-      // Scroll to tag title 
-      const hashIndex = href.indexOf('#')
-      if (hashIndex !== -1) {
-        const hash = href.substring(hashIndex + 1)
-        const element = document.getElementById(hash)
-        if (element) window.scrollTo(0, element.offsetTop)
-      }
+      pushRoute(href)
     }
   }
 })
 
-export default {
-  router,
+export {
+  //router,
   link,
-  pushRoute
+  pushRoute,
+  //match,
+  routeMatch,
+  setBaseroute
 }
 
 /*

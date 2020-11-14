@@ -1,9 +1,7 @@
-import { cl, routing } from 'domerjs'
+import { cl, link } from 'domerjs'
 
 import styles from './styles.css'
 import img from '../images/jslogo.png'
-
-const { link } = routing
 
 const logo = { tag: 'img', props: { src: img, width: 100, class: cl(styles, 'logo') } }
 

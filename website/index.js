@@ -1,6 +1,8 @@
-import feather from 'feather-icons'
+import { createApp, routeMatch, setBaseroute } from 'domerjs' // Parcel bundler alias in package.json
 
-import { createApp, routing } from 'domerjs' // Parcel bundler alias in package.json
+if (process.env.NODE_ENV === 'production') {
+  setBaseroute('/domerjs')
+}
 
 import 'regenerator-runtime/runtime' // required for JSDOM
 import 'normalize.css'
@@ -9,21 +11,24 @@ import './styles.css'
 
 import home from './home'
 import master from './master'
+import notfound from './notfound'
 
 const routes = ['/examples', '/doc']
 
-const appRouter = routing.router(function (path) {
-  if (path === '/') return home
-  if (routes.find((route) => path.startsWith(route))) return master
-  return null
-})
-
 const app = {
   tag: 'div',
-  render: appRouter
+  render: function () {
+    if (routeMatch('/')) return home
+    if (routeMatch(routes)) return master
+
+    return notfound
+  },
+  windowEvents: {
+    popstate: function () {
+      this.update()
+    }
+  }
 }
 
 const context = { lang: 'en' }
-createApp(app, document.getElementById('app'), { context })
-
-feather.replace()
+createApp(app, document.getElementById('app'))

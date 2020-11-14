@@ -1,6 +1,8 @@
-import { cl, routing } from 'domerjs'
+import { cl, link, routeMatch } from 'domerjs'
+
 import doc from '../doc'
 import examples from '../examples'
+import notfound from '../notfound'
 
 import styles from './styles.css'
 
@@ -9,8 +11,6 @@ const menuTitle = (title) => ({
   render: title,
   props: { class: cl(styles, 'menuTitle') }
 })
-
-const { link } = routing
 
 const activeLink = ({ path, text }) => link(path, text, {
   class: function () {
@@ -31,10 +31,11 @@ const linkList = (items) => ({
   props: { class: cl(styles, 'linkList') }
 })
 
+/*
 const router = routing.router(function (path) {
   if (path.startsWith('/doc')) return doc
   if (path.startsWith('/examples')) return examples
-})
+})*/
 
 const docLinks = linkList([
   { path: '/doc#intro', text: '#Intro' },
@@ -72,7 +73,13 @@ const menu = {
 
 const content = {
   tag: 'div',
-  render: router,
+  render: function () {
+    if (routeMatch('/doc/test')) return { tag: 'div', render: 'test' }
+    if (routeMatch('/doc')) return doc
+
+    if (routeMatch('/examples')) return examples
+    return { tag: 'div', render: 'example not found' }
+  },
   props: { class: cl(styles, 'content') }
 }
 

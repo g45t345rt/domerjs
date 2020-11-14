@@ -1,19 +1,13 @@
-import { cl, routing, createApp } from 'domerjs'
+import { cl, createApp, link, routeMatch } from 'domerjs'
 
 import styles from './styles.css'
+
+import notfound from './notfound'
 
 const page = (text) => ({
   tag: 'div',
   render: text
 })
-
-const appRouter = routing.router((path) => {
-  if (path === '/') return page('This is page one.')
-  if (path === '/two') return page('This is page two.')
-  if (path === '/three') return page('This is page three.')
-})
-
-const { link } = routing
 
 const menuLink = (path, text) => {
   const newLink = link(path, text)
@@ -26,13 +20,32 @@ const links = {
   render: [
     menuLink('/', 'ONE'),
     menuLink('/two', 'TWO'),
-    menuLink('/three', 'THREE')
+    menuLink('/three', 'THREE'),
+    menuLink('/sdfgsdfg', 'Not found')
   ]
+}
+
+const page1 = page('This is page one.')
+const page2 = page('This is page two.')
+const page3 = page('This is page three.')
+
+const router = {
+
 }
 
 const app = {
   tag: 'div',
-  render: [links, appRouter]
+  render: function () {
+    if (routeMatch('/')) return [links, page1]
+    if (routeMatch('/two')) return [links, page2]
+    if (routeMatch('/three')) return [links, page3]
+    return notfound
+  },
+  windowEvents: {
+    popstate: function () {
+      this.update()
+    }
+  }
 }
 
-createApp(app, document.getElementById('app'), {})
+createApp(app, document.getElementById('app'))

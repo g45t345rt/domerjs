@@ -1,6 +1,3 @@
-import router from './presets/router'
-export const routing = router
-
 function getAttrValue (entry, key) {
   const { props = {} } = entry
   if (typeof props[key] === 'function') return props[key].bind(entry).call()
@@ -203,13 +200,13 @@ function traverse (entry, parent, options) {
   else append(entry)
 }
 
-export function createApp (entry, rootElement, options) {
+function createApp (entry, rootElement, options = {}) {
   const parent = { element: rootElement }
   traverse(entry, parent, options)
 }
 
 // Helpers
-export function cl (styles, ...classNames) {
+function cl (styles, ...classNames) {
   return classNames.map((className) => {
     return styles[className]
   }).join(' ')
@@ -219,7 +216,7 @@ function camelToDash (str) {
   return str.replace(/\W+/g, '-').replace(/([a-z\d])([A-Z])/g, '$1-$2').toLowerCase()
 }
 
-export function st (styles) {
+function st (styles) {
   let str = ''
   Object.keys(styles).forEach((key) => {
     str += `${camelToDash(key)}:${styles[key]};`
@@ -242,7 +239,7 @@ function propsToString (entry) {
 
 const selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']
 
-export function createHtml (entry, parent) {
+function createHtml (entry, parent) {
   if (parent && !entry.parent) entry.parent = parent
 
   const propsString = propsToString(entry)
@@ -270,4 +267,17 @@ export function createHtml (entry, parent) {
     //if (!tag) return childHtml
     return `<${tag}${propsString}>${childHtml}</${tag}>`
   }
+}
+
+import { routeMatch, link, pushRoute, setBaseroute } from './presets/router'
+
+export {
+  createApp,
+  createHtml,
+  cl,
+  st,
+  routeMatch,
+  link,
+  pushRoute,
+  setBaseroute
 }

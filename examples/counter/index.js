@@ -19,4 +19,4 @@ const timer = {
   }
 }
 
-createApp(timer, document.getElementById('app'), {})
+createApp(timer, document.getElementById('app'))
