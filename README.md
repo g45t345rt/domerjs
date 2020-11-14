@@ -1,17 +1,21 @@
-domer is a minuscule Javascript library for creating declarative user interfaces. It will help you keep your code organized without become a mess in the long run.
+# domerjs
+
+Create small to big applications while keeping every logic inside declative objects.
+
+domerjs is a minuscule Javascript library for creating declarative user interfaces. It will help you keep your code organized without become a mess in the long run.
 
 It does not implement any virtual DOM.
 
 ## Install
 ````
-npm i domer
+npm i domerjs
 ````
 
 ## Basic usage (es6)
 ````
-import { createApp, el } from 'domer'
+import { createApp, el } from 'domerjs'
 
-// Declartive object
+// Declarative object
 const helloworld = {
   tag: 'div',
   render: 'Hello world'
@@ -23,7 +27,7 @@ const helloworld = {
 createApp(helloworld, document.body)
 ````
 
-This is a simple helloworld app but you can create complex apps without really changing the workflow.
+This is a simple helloworld app but you can create complex apps without changing the structure. Here is a list of basic to more complete examples: https://domerjs.com/examples
 
 ## Why?
 
@@ -35,9 +39,11 @@ There is a lot of web framework out there but I wanted something that basically 
 ## How does it work?
 It's a recursive function that compute each objects in the tree while using DOM to append elements, change attributes and listen to declared events.
 
+Definition of the object
 ````
 {
   // Declarative properties
+  id: string // object identifier (object can have the same id)
   tag: string // element tagName
   render: [function, array, object, string]
   children: [array, object] // tree childs
@@ -64,35 +70,31 @@ It's a recursive function that compute each objects in the tree while using DOM 
 }
 ````
 
+Functions
+````
+// Main functions
+createApp(root, element, options) // Render app objects definition at the element provided
+createHtml(root, options) // Convert app to html string (SSR)
+
+// Helpers functions
+el(tag, render, props) // Return declarative object based on args
+cl(styles, ...classNames) // From class object list to concat class names
+st(styles) // Convert object style to concat style names
+
+````
+
 ## Is it fast?
 
-I mean there is no virtual dom and use DOM directly so it's as fast as DOM itself.
+I mean there is no virtual dom so it's as fast as DOM itself.
 Calling `update()` does not render the entire app but actually renders from the position in the tree.
-
-Let's say we have a,b,c,d,e,f,g
-a contains b, c
-b contains d
-c contains e, f
-e contains g
-
-Calling update on
-a = render entire app a,b,c,d,e,f,g
-b = render b, d
-c = render c, e, f, g
-d = render d
-e = render e, g
-f = render f
-g = render g
-
-Not sure if it's clear but 
 
 ## Documentation
 
-Full docs at domer.com or check out the doc folder in the Github repo
+Full docs at https://domerjs.com/doc or check out the doc folder in the Github repo
 
 ## Server-side rendering
 
-It's a simple `createHtml()` function that traverse the tree and compite the html code. We actually don't need fake DOM.
+It's a simple `createHtml()` function that traverse the tree and compute the objects into html code. We don't need to fake DOM as long as you don't use DOM in render.
 
 ## License
 

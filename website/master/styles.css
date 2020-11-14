@@ -1,0 +1,42 @@
+.app {
+
+}
+
+.menu {
+  min-width: 200px;
+  position: fixed;
+  padding-top: 5px;
+}
+
+.menuTitle {
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #989898;
+  margin-bottom: 15px;
+}
+
+.content {
+  margin-left: 200px;
+  margin-bottom: 200px;
+  margin-top: 50px;
+}
+
+.linkList {
+  list-style: none;
+  padding: 0;
+  margin: 5px 0 20px 0;
+}
+
+.linkList li {
+  margin-bottom: 10px;
+}
+
+.linkList li a {
+  text-decoration: none;
+  color: #585858;
+  font-weight: 600;
+}
+
+.linkList li a.activeLinkList {
+  color: red;
+}

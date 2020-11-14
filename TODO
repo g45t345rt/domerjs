@@ -1,12 +1,14 @@
 1.0.0
 ☐ Create NPM package
-☐ Simple editor for examples (edit code and view result on the right)
-☐ Detail documentation for each aspect of the package
-☐ Design domer logo
+☐ Design domerjs logo
+☐ Website must be responsive
 
+✔ Extract examples from the app and make them standalone @done(20-11-13 15:16)
+✔ Detail documentation for each aspect of the package @done(20-11-07 17:49)
+✔ Change name from domer to domerjs @done(20-11-06 16:54)
 ✔ Simple doc readme.md @done(20-11-06 09:51)
 ✔ Design home page to describe the package @done(20-11-05 18:20)
-✔ Add real examples using domer (helloworld,counter,todo,routing) @done(20-11-04 13:04)
+✔ Add real examples using domerjs (helloworld,counter,todo,routing) @done(20-11-04 13:04)
 ✔ Support SSR (createHtml) by returning html string by traversing the tree @done(20-11-04 20:45)
 ✔ New routing function @done(20-11-03 16:44)
-✔ Create basic traverse compute function @done(20-11-03 18:23)
+✔ Create basic traverse compute function (createApp) @done(20-11-03 18:23)

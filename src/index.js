@@ -1,5 +1,5 @@
-import cr from './presets/router'
-export const createRouter = cr
+import router from './presets/router'
+export const routing = router
 
 function getAttrValue (entry, key) {
   const { props = {} } = entry
@@ -11,7 +11,9 @@ function updateElementProps (entry) {
   const { props = {}, element } = entry
 
   Object.keys(props).forEach((key) => {
-    element.setAttribute(key, getAttrValue(entry, key))
+    const newValue = getAttrValue(entry, key)
+    if (newValue === false) element.removeAttribute(key)
+    else element.setAttribute(key, newValue)
   })
 }
 
@@ -26,9 +28,9 @@ function setElementEvents (entry) {
 
     const eventProps = entry[key]
     Object.keys(eventProps).forEach((eventKey) => {
-      const eventFunc = eventProps[eventKey]
+      const eventFunc = eventProps[eventKey].bind(entry)
       entry.listeners.push({ element, eventKey, eventFunc })
-      element.addEventListener(eventKey, eventFunc.bind(entry))
+      element.addEventListener(eventKey, eventFunc)
     })
   })
 }
@@ -45,6 +47,7 @@ function setUpdateFunc (entry, options) {
   entry.update = function () {
     if (!this.mounted) return
     traverse(this, null, options)
+    if (typeof entry.onUpdate === 'function') entry.onUpdate()
   }
 }
 
@@ -57,14 +60,11 @@ function setStateFunc (entry) {
   }
 }
 
-function setGetParentFunc (entry) {
-  entry.getParent = function (count) {
-    let parent = this.parent
-    count--
-    while (count--) {
-      parent = parent.parent
-    }
-    return parent
+function setGetFirstParentFunc (entry) {
+  entry.getFirstParent = function (func) {
+    if (!this.parent || !this.parent.getFirstParent) return null
+    if (func(this.parent)) return this.parent
+    return this.parent.getFirstParent(func)
   }
 }
 
@@ -73,7 +73,7 @@ function childrenToArray (children) {
   if (Array.isArray(children)) {
     // simple child array
     childs = children
-  } else if (typeof children === 'object') {
+  } else if (children && typeof children === 'object') {
     if (children.tag) {
       // if tag then object is actually a template definition
       childs.push(children)
@@ -103,7 +103,7 @@ function mount (entry, parent, options) {
   // Set helper functions
   setUpdateFunc(entry, options)
   setStateFunc(entry)
-  setGetParentFunc(entry)
+  setGetFirstParentFunc(entry)
 
   if (typeof entry.onMount === 'function') entry.onMount()
 }
@@ -122,37 +122,51 @@ function unmount (entry) {
 
 function append (entry) {
   if (entry.appended) return
+
   entry.parent.element.appendChild(entry.element)
   entry.appended = true
+
+  if (typeof entry.onAppend === 'function') entry.onAppend()
 }
 
 function detach (entry) {
   if (!entry.appended) return
+  if (typeof entry.onDetach === 'function') entry.onDetach()
   entry.parent.element.removeChild(entry.element)
   entry.appended = false
   // Detach childs recursive
   childrenToArray(entry.children).forEach((child) => detach(child))
 }
 
-function applyRender (entry, render) {
-  if (!render) return
+function funcRender (entry, render) {
   if (typeof render === 'function') {
-    return applyRender(entry, entry.render())
+    const result = entry.render()
+    //if (typeof result !== 'function') entry.children = result
+    return funcRender(entry, result)
   }
 
-  if (typeof render === 'string') {
-    if (entry.html) entry.element.innerHTML = render
-    else entry.element.textContent = render
-    return
-  }
+  return render
+}
 
-  //const { html, value } = render
+const textRenderTypes = ['string', 'number']
+// Recursive function that compute the tree
+function traverse (entry, parent, options) {
+  // Apply all definition from entry obj [if not already mounted]
+  mount(entry, parent, options)
+
+  // Set element attributes everytime we traverse or update the entry (template)
+  updateElementProps(entry)
+
   const oldChildren = entry.children
-  entry.children = render
+  // Apply render might change entry.children
+  //applyRender(entry, entry.render)
+  const toRender = funcRender(entry, entry.render)
+  if (toRender) entry.children = toRender
 
   const oldChildrenArray = childrenToArray(oldChildren)
   const newChildrenArray = childrenToArray(entry.children)
 
+  // Detach and unmount old childs
   oldChildrenArray.forEach((oldChild) => {
     // Detach all child because they might not be in the same order
     detach(oldChild)
@@ -162,28 +176,31 @@ function applyRender (entry, render) {
       return newChild.element && oldChild.element.isEqualNode(newChild.element)
     })
 
-    if (!matchChild) unmount(oldChild)
+    if (!matchChild) {
+      //detach(oldChild)
+      unmount(oldChild)
+    }
   })
-}
 
-// Recursive function that compute the tree
-function traverse (entry, parent, options) {
-  // Apply all definition from entry obj [if not already mounted]
-  mount(entry, parent, options)
+  if (textRenderTypes.indexOf(typeof oldChildren) !== -1 && textRenderTypes.indexOf(typeof entry.children) === -1) {
+    if (entry.html) entry.element.innerHTML = ''
+    else entry.element.textContent = ''
+    //entry.appended = false
+  }
 
-  // Set element attributes everytime we traverse or update the entry (template)
-  updateElementProps(entry)
+  // When children is a string or number
+  if (textRenderTypes.indexOf(typeof entry.children) !== -1 && (entry.children !== oldChildren || !entry.appended)) {
+    if (entry.html) entry.element.innerHTML = entry.children
+    else entry.element.textContent = entry.children
+  }
 
-  applyRender(entry, entry.render)
-
-  // IMPORTANT - entry.children might be modified by applyRender
-  const childrenArray = childrenToArray(entry.children)
-  childrenArray.forEach((child) => {
+  // Apply childs
+  newChildrenArray.forEach((child) => {
     traverse(child, entry, options)
   })
 
-  // Append to DOM [if not already appended]
-  append(entry)
+  if (toRender === false) detach(entry)
+  else append(entry)
 }
 
 export function createApp (entry, rootElement, options) {
@@ -210,16 +227,6 @@ export function st (styles) {
   return str
 }
 
-export function el (tag, renderOrChilds, props) {
-  const entry = { tag }
-  if (renderOrChilds) {
-    if (typeof renderOrChilds === 'string' || typeof renderOrChilds === 'function') entry.render = renderOrChilds
-    else entry.children = renderOrChilds
-  }
-  if (props) entry.props = props
-  return entry
-}
-
 // NODOM (SSR)
 function propsToString (entry) {
   let s = ''
@@ -237,7 +244,6 @@ const selfClosingTags = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'inp
 
 export function createHtml (entry, parent) {
   if (parent && !entry.parent) entry.parent = parent
-  if (!entry.getParent) setGetParentFunc(entry)
 
   const propsString = propsToString(entry)
   const { tag, render } = entry
