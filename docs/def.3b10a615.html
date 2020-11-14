@@ -1,0 +1,31 @@
+<h1 id="object-definition">Object definition</h1><pre><code class="language-json">{
+  // Declarative properties
+  tag: string // element tagName
+  render: [function, array, object, string]
+  props: object // Set element attributes
+  events: object // Set element events
+  windowEvents: object // Set window events
+  documentEvents: object // Set document events
+  state: object // properties in the object state
+
+  // Reserved props
+  children: [array, object] // tree childs
+  context: object // global context accessible anywhere in the tree
+  element: object // The actual DOM element
+  mounted: boolean // Is mounted or not
+  appended: boolean // Appended or not
+  parent: object // tree parent object
+  listeners: array // keep track of events
+  state: object // default to empty object
+
+  // Reserved helper functions
+  update: func // update by calling render and element props 
+  setState: func // assign new props to state and update object and childs
+  getFirstParent: func // get first parent matching predicate
+
+  // Lifecycle events
+  onMount: func // called when object is mouted
+  onUnMount: func // called when object is unmounted
+  onAppend: func // called when object is append to dom
+  onDetach: func // called when object is removed from dom
+}</code></pre>
