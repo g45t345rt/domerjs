@@ -3,9 +3,9 @@
   "version": "0.0.1",
   "description": "JavaScript library for creating declarative user interfaces",
   "source": "src/index.js",
-  "main": "release/domerjs.js",
-  "module": "release/domerjs.module.js",
-  "unpkg": "release/domerjs.umd.js",
+  "main": "docs/release/domerjs.js",
+  "module": "docs/release/domerjs.module.js",
+  "unpkg": "docs/release/domerjs.umd.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "web": "cd website && parcel index.html",
