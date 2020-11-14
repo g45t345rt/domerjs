@@ -8,7 +8,7 @@
   "unpkg": "release/domerjs.umd.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "website": "cd website && parcel index.html",
+    "web": "cd website && parcel index.html",
     "docs": "parcel build website/index.html --out-dir docs --public-url /domerjs",
     "example": "cd examples/%NAME% && parcel index.html",
     "dev": "",

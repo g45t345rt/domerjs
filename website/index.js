@@ -30,5 +30,4 @@ const app = {
   }
 }
 
-const context = { lang: 'en' }
 createApp(app, document.getElementById('app'))

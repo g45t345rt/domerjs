@@ -40,10 +40,10 @@ function clearElementEvents (entry) {
   entry.listeners = []
 }
 
-function setUpdateFunc (entry, options) {
+function setUpdateFunc (entry, context) {
   entry.update = function () {
     if (!this.mounted) return
-    traverse(this, null, options)
+    traverse(this, null, context)
     if (typeof entry.onUpdate === 'function') entry.onUpdate()
   }
 }
@@ -83,11 +83,11 @@ function childrenToArray (children) {
   return childs
 }
 
-function mount (entry, parent, options) {
+function mount (entry, parent, context) {
   if (entry.mounted) return
   // Assign default properties
   if (parent) entry.parent = parent
-  if (options.context) entry.context = options.context
+  if (!entry.context) entry.context = context
   if (!entry.state) entry.state = {}
 
   // Create element from DOM
@@ -98,7 +98,7 @@ function mount (entry, parent, options) {
   setElementEvents(entry)
 
   // Set helper functions
-  setUpdateFunc(entry, options)
+  setUpdateFunc(entry, context)
   setStateFunc(entry)
   setGetFirstParentFunc(entry)
 
@@ -147,9 +147,9 @@ function funcRender (entry, render) {
 
 const textRenderTypes = ['string', 'number']
 // Recursive function that compute the tree
-function traverse (entry, parent, options) {
+function traverse (entry, parent, context) {
   // Apply all definition from entry obj [if not already mounted]
-  mount(entry, parent, options)
+  mount(entry, parent, context)
 
   // Set element attributes everytime we traverse or update the entry (template)
   updateElementProps(entry)
@@ -193,16 +193,16 @@ function traverse (entry, parent, options) {
 
   // Apply childs
   newChildrenArray.forEach((child) => {
-    traverse(child, entry, options)
+    traverse(child, entry, context)
   })
 
   if (toRender === false) detach(entry)
   else append(entry)
 }
 
-function createApp (entry, rootElement, options = {}) {
+function createApp (entry, rootElement, context = {}) {
   const parent = { element: rootElement }
-  traverse(entry, parent, options)
+  traverse(entry, parent, context)
 }
 
 // Helpers
