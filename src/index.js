@@ -166,7 +166,7 @@ function traverse (entry, parent, context) {
   // Detach and unmount old childs
   oldChildrenArray.forEach((oldChild) => {
     // Detach all child because they might not be in the same order
-    detach(oldChild)
+    //detach(oldChild)
 
     // Unmount childs not return by render
     const matchChild = newChildrenArray.find((newChild) => {
@@ -174,7 +174,7 @@ function traverse (entry, parent, context) {
     })
 
     if (!matchChild) {
-      //detach(oldChild)
+      detach(oldChild)
       unmount(oldChild)
     }
   })

@@ -1,4 +1,3 @@
-import shortid from 'shortid'
 import { cl, createApp } from 'domerjs'
 
 import styles from './styles.css'
@@ -17,7 +16,7 @@ const todoInput = {
         if (e.currentTarget.value === '') return
         const { state: { items } } = list
 
-        items.unshift({ key: shortid(), value: e.currentTarget.value, done: false })
+        items.unshift({ key: Date.now(), value: e.currentTarget.value, done: false })
         list.update()
         stats.update()
         e.currentTarget.value = ''
@@ -40,4 +39,4 @@ const app = {
   render: { title, todoInput, list, stats }
 }
 
-createApp(app, document.getElementById('app'))
+createApp(app, document.body)

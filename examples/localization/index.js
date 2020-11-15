@@ -51,4 +51,4 @@ const context = {
   lang: 'en'
 }
 
-createApp(app, document.getElementById('app'), { context })
+createApp(app, document.body, context)

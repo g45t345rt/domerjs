@@ -29,10 +29,6 @@ const page1 = page('This is page one.')
 const page2 = page('This is page two.')
 const page3 = page('This is page three.')
 
-const router = {
-
-}
-
 const app = {
   tag: 'div',
   render: function () {
@@ -48,4 +44,4 @@ const app = {
   }
 }
 
-createApp(app, document.getElementById('app'))
+createApp(app, document.body)

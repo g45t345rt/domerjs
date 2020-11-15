@@ -27,8 +27,7 @@
     "highlight.js": "^10.3.2",
     "normalize.css": "^8.0.1",
     "pretty": "^2.0.0",
-    "remarkable": "^2.0.1",
-    "shortid": "^2.2.16"
+    "remarkable": "^2.0.1"
   },
   "alias": {
     "domerjs": "./src/index.js"

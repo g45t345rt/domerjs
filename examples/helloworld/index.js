@@ -5,4 +5,4 @@ const helloWorld = {
   render: 'Hello world'
 }
 
-createApp(helloWorld, document.getElementById('app'))
+createApp(helloWorld, document.body)

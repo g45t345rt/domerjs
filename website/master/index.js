@@ -2,7 +2,6 @@ import { cl, link, routeMatch } from 'domerjs'
 
 import doc from '../doc'
 import examples from '../examples'
-import notfound from '../notfound'
 
 import styles from './styles.css'
 
@@ -31,12 +30,6 @@ const linkList = (items) => ({
   props: { class: cl(styles, 'linkList') }
 })
 
-/*
-const router = routing.router(function (path) {
-  if (path.startsWith('/doc')) return doc
-  if (path.startsWith('/examples')) return examples
-})*/
-
 const docLinks = linkList([
   { path: '/doc#intro', text: '#Intro' },
   { path: '/doc#install', text: '#Install' },
@@ -47,13 +40,12 @@ const docLinks = linkList([
 ])
 
 const examplesLinks = linkList([
-  { path: '/examples', text: 'Helloworld (simple)' },
-  { path: '/examples/counter', text: 'Counter (state)' },
-  { path: '/examples/todomvc', text: 'Todo (app)' },
-  { path: '/examples/router', text: 'Router (routing)' },
-  { path: '/examples/localization', text: 'Context (localization)' },
-  { path: '/examples/external', text: 'External (markdown)' },
-  { path: '/examples/ssr', text: 'Server-side Rendering' }
+  { path: '/examples#hello world', text: '#Helloworld' },
+  { path: '/examples#counter', text: '#Counter' },
+  { path: '/examples#router', text: '#Router' },
+  { path: '/examples#localization', text: '#Localization' },
+  { path: '/examples#markdown', text: '#Markdown' },
+  { path: '/examples#todo mvc', text: '#TODO MVC' }
 ])
 
 const menu = {
@@ -74,11 +66,8 @@ const menu = {
 const content = {
   tag: 'div',
   render: function () {
-    if (routeMatch('/doc/test')) return { tag: 'div', render: 'test' }
     if (routeMatch('/doc')) return doc
-
     if (routeMatch('/examples')) return examples
-    return { tag: 'div', render: 'example not found' }
   },
   props: { class: cl(styles, 'content') }
 }
