@@ -47,7 +47,6 @@
     "node-fetch": "^2.6.1",
     "normalize.css": "^8.0.1",
     "pretty": "^2.0.0",
-    "prop-types": "^15.7.2",
     "remarkable": "^2.0.1"
   },
   "alias": {

@@ -1,0 +1,11 @@
+<h1 id="api">API</h1><h3 id="element">Element</h3><pre><code class="language-js">function newEl(tagName, options)
+
+// Options definition
+{
+  value: [func, number, string],
+  html: bool, // render value as html
+  attrs: object, // dom attributes,
+  dataset: object,
+  events: object // dom events
+}
+</code></pre><p>Create dom element based on options</p><hr><pre><code class="language-js">function updateEl(el, newValue)</code></pre><p>Update element with current value function or with newValue</p><h3 id="router">Router</h3><pre><code class="language-js">function cl(styles, ...classNames)</code></pre><p>Convert class object list to string class names</p><hr><pre><code class="language-js">function st(styles)</code></pre><p>Convert object style to string style names</p>
