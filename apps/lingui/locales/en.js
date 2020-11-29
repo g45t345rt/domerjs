@@ -1,0 +1,1 @@
+/*eslint-disable*/module.exports={messages:{"Change language":"Change language","This is a description.":"This is a description.","This is a title":"This is a title"}};

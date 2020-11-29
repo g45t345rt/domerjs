@@ -1,0 +1,32 @@
+body {
+  margin: 0;
+}
+
+.modal {
+  position: fixed;
+  padding: 20px;
+  top: 0;
+  width: 100%;
+  background-color: white;
+}
+
+.modalShadow {
+  position: fixed;
+  background-color: rgb(0 0 0 / 0.50);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.title {
+  text-decoration: underline;
+}
+
+.post {
+  padding: 10px;
+}
+
+.postTitle {
+  font-weight: bold;
+}

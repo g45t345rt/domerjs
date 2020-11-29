@@ -1,0 +1,14 @@
+{
+  "title": {
+    "en": "This is a title",
+    "fr": "Ceci est un titre"
+  },
+  "description": {
+    "en": "This is a description.",
+    "fr": "{{first}} Ceci est une description. {{last}}"
+  },
+  "changeLanguage": {
+    "en": "Change language",
+    "fr": "Changer de language"
+  }
+}

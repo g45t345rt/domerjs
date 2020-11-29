@@ -1,0 +1,60 @@
+.master {
+  display: flex;
+  flex-direction: row;
+}
+
+.menu {
+  min-width: 200px;
+  margin-top: 25px;
+  padding-left: 20px;
+}
+
+.menuTitle {
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #989898;
+  margin-bottom: 10px;
+}
+
+.content {
+  margin-left: 200px;
+  margin-bottom: 200px;
+  margin-top: 50px;
+}
+
+.menuItem {
+  margin-top: 10px;
+}
+
+.menuItem a {
+  text-decoration: none;
+  color: #585858;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.backHome::before {
+  content: '\27A7';
+  transform: rotate(-180deg);
+  display: inline-flex;
+  margin-right: 5px;
+}
+
+.backHome {
+  display: inline-block;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: white;
+  border: thin solid #585858;
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 13px;
+  color: #585858;
+}
+
+.backHome:hover {
+  transform: scale(1.01);
+  transition: all .1s;
+}

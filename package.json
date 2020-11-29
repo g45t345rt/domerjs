@@ -1,0 +1,56 @@
+{
+  "name": "domerjs",
+  "version": "0.0.1",
+  "description": "JavaScript helpers functions for creating declarative user interfaces",
+  "source": "src/index.js",
+  "main": "docs/release/domerjs.js",
+  "module": "docs/release/domerjs.module.js",
+  "unpkg": "docs/release/domerjs.umd.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "apps-helloworld": "cd apps/helloworld && parcel index.html",
+    "apps-router": "cd apps/router && parcel index.html",
+    "apps-counter": "cd apps/counter && parcel index.html",
+    "apps-markdown": "cd apps/markdown && parcel index.html",
+    "apps-lingui": "cd apps/lingui && parcel index.html",
+    "apps-lingui-extract": "lingui extract",
+    "apps-lingui-compile": "lingui compile",
+    "apps-trans": "cd apps/trans && parcel index.html",
+    "apps-modal": "cd apps/modal && parcel index.html",
+    "apps-ssr-client": "cd apps/ssr && parcel watch ./client/index.js --out-dir public --out-file client.js",
+    "apps-ssr-server": "cd apps/ssr && parcel watch ./server/index.js --target=node --out-file server.js",
+    "apps-ssr": "SET PORT=8080 && cd apps/ssr && nodemon ./dist/server.js",
+    "web": "cd web && parcel index.html",
+    "docs": "parcel build web/index.html --out-dir docs --public-url /domerjs",
+    "build": "microbundle"
+  },
+  "author": "Fred",
+  "license": "MIT",
+  "devDependencies": {
+    "@babel/core": "^7.12.7",
+    "@lingui/cli": "^3.2.2",
+    "autoprefixer": "^9.0.1",
+    "marked": "^1.2.5",
+    "microbundle": "^0.12.4",
+    "nodemon": "^2.0.6",
+    "parcel-bundler": "^1.12.4",
+    "postcss-modules": "^3.2.2"
+  },
+  "dependencies": {
+    "@lingui/core": "^3.2.2",
+    "@lingui/macro": "^3.2.2",
+    "babel-plugin-macros": "^2.8.0",
+    "express": "^4.17.1",
+    "highlight.js": "^10.4.0",
+    "jsdom": "^16.4.0",
+    "nanoid": "^3.1.18",
+    "node-fetch": "^2.6.1",
+    "normalize.css": "^8.0.1",
+    "pretty": "^2.0.0",
+    "prop-types": "^15.7.2",
+    "remarkable": "^2.0.1"
+  },
+  "alias": {
+    "domerjs": "./src/index.js"
+  }
+}

@@ -1,0 +1,11 @@
+# Packages
+node_modules
+*.log
+*.lock
+
+# Parcel bundler
+.cache
+dist
+
+# Mac
+.DS_Store

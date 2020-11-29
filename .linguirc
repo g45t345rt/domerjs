@@ -1,0 +1,13 @@
+{
+  "locales": [
+    "en",
+    "fr"
+  ],
+  "catalogs": [
+    {
+      "path": "apps/lingui/locales/{locale}",
+      "include": ["apps/lingui/"],
+      "exclude": ["dist",".cache"]
+    }
+  ]
+}

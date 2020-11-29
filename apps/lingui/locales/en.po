@@ -1,0 +1,29 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2020-11-20 18:55-0500\n"
+"Mime-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: en\n"
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Plural-Forms: \n"
+
+#: apps/lingui/dist/lingui.e31bb0bc.js:4128
+#: apps/lingui/index.js:18
+msgid "Change language"
+msgstr ""
+
+#: apps/lingui/dist/lingui.e31bb0bc.js:4148
+#: apps/lingui/index.js:32
+msgid "This is a description."
+msgstr ""
+
+#: apps/lingui/dist/lingui.e31bb0bc.js:4141
+#: apps/lingui/index.js:28
+msgid "This is a title"
+msgstr ""

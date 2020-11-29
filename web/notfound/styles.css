@@ -1,0 +1,9 @@
+.notFound {
+  margin: 50px auto;
+  background-color: white;
+  border-radius: 10px;
+  max-width: 400px;
+  text-align: center;
+  padding: 20px;
+  border: thin dashed #e6e6e6;
+}
