@@ -14,7 +14,7 @@ const title = newEl('div', {
 
 const slogan = newEl('div', {
   attrs: { class: styles.slogan },
-  value: 'Collection of helper functions for creating declarative user interfaces.'
+  value: 'Collection of helper functions for creating declarative user interfaces'
 })
 
 const docLink = newEl('a', {

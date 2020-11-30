@@ -6,8 +6,7 @@
 import { newEl } from 'domerjs'
 
 // Declarative object
-const helloworld = newEl({
-  tag: 'div',
+const helloworld = newEl('div', {
   value: 'Hello world'
 })
 

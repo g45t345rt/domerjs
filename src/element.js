@@ -1,11 +1,12 @@
 import { nanoid } from 'nanoid'
+import * as updater from './updater'
 
 export let ids = window.__ssr || []
 
 let elIndex = 0
 export function newEl (tagName, options = {}) {
   let el = null
-  const { attrs = {}, events = {}, dataset = {}, value, html, updateOn, useSSR = true } = options
+  const { attrs = {}, events = {}, dataset = {}, classList = [], value, html, updateOn, useSSR = true } = options
 
   let data = {}
 
@@ -35,6 +36,9 @@ export function newEl (tagName, options = {}) {
   // Attributes
   Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]))
 
+  // Classlist
+  classList.forEach((key) => el.classList.add(key))
+
   // Dataset
   Object.keys(dataset).forEach((key) => el.dataset[key] = dataset[key])
 
@@ -42,7 +46,9 @@ export function newEl (tagName, options = {}) {
   Object.keys(events).forEach((key) => el.addEventListener(key, events[key]))
 
   // Attach update keys
-  if (updateOn) updater.assign(updateOn, el)
+  if (updateOn) {
+    updater.assign(updateOn, el)
+  }
 
   return el
 }
@@ -55,7 +61,7 @@ export function updateEl (el, newValue) {
 
   if (typeof value === 'function') {
     const funcValue = value(el)
-    updateEl(el, funcValue)
+    if (funcValue) updateEl(el, funcValue)
     return
   }
 

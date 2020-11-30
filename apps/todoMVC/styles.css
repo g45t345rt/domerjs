@@ -1,0 +1,76 @@
+.app {
+  border-radius: 5px;
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.todoInput {
+    border: none;
+    background: rgba(0, 0, 0, 0.003);
+    font-size: 24px;
+    outline: none;
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid #e6e6e6;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  background-color: #e6e6e6;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
+.title {
+  text-align: center;
+}
+
+.value {
+  flex: 1;
+  margin-left: 10px;
+}
+
+.close {
+  display: inline-block;
+  cursor: pointer;
+}
+
+.close::before {
+  content: '\2716'
+}
+
+.stats { 
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.filters {
+  display: flex;
+}
+
+.filterItem {
+  color: #4e4e4e;
+  padding: 2px 5px ;
+  border-radius: 3px;
+  margin-left: 5px;
+  cursor: pointer;
+}
+
+.activeFilterItem {
+  border: thin solid #d8d8d8;
+}
+
+.data {
+  padding: 10px;
+  background-color: #000000;
+  color: white;
+  margin-top: 40px;
+  white-space: pre-wrap;
+}
