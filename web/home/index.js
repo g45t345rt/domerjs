@@ -1,6 +1,7 @@
 import { newEl, router } from 'domerjs'
 
 import styles from './styles.css'
+
 import img from '../images/jslogo.png'
 
 const logo = newEl('img', {

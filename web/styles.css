@@ -13,3 +13,9 @@ body {
   background-size: cover;
   */
 }
+
+.content {
+  margin-left: 170px;
+  overflow: auto;
+  margin-right: 20px;
+}

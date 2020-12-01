@@ -10,8 +10,10 @@ git clone https://github.com/g45t345rt/domerjs.git/domerjs
 cd domerjs
 npm install
 
-npm run dev # build source file inside dev-dist
-npm run app # start this website with domerjs
+npm run build # build source file inside docs/release
+npm run web # start this website with domerjs
+npm run apps-[appname] # start specific example
+npm run docs # build website for Github pages
 ```
 
-JS files are transpile with parcel-bundler
+JS files are transpile with [parcel-bundler](https://parceljs.org/)

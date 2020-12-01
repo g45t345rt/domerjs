@@ -37,7 +37,8 @@ export function newEl (tagName, options = {}) {
   Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]))
 
   // Classlist
-  classList.forEach((key) => el.classList.add(key))
+  if (typeof classList === 'string') el.classList.add(classList)
+  else if (Array.isArray(classList)) classList.forEach((key) => el.classList.add(key))
 
   // Dataset
   Object.keys(dataset).forEach((key) => el.dataset[key] = dataset[key])
@@ -51,6 +52,10 @@ export function newEl (tagName, options = {}) {
   }
 
   return el
+}
+
+export function newElClass (classList, value, tagName = 'div') {
+  return newEl(tagName, { classList, value })
 }
 
 const valueTags = ['INPUT', 'TEXTAREA']
