@@ -7,6 +7,7 @@
   "module": "docs/release/domerjs.module.js",
   "unpkg": "docs/release/domerjs.umd.js",
   "scripts": {
+    "preinstall": "npx npm-force-resolutions",
     "test": "echo \"Error: no test specified\" && exit 1",
     "apps-helloworld": "cd apps/helloworld && parcel index.html",
     "apps-router": "cd apps/router && parcel index.html",
@@ -36,6 +37,9 @@
     "nodemon": "^2.0.6",
     "parcel-bundler": "^1.12.4",
     "postcss-modules": "^3.2.2"
+  },
+  "resolutions": {
+    "node-forge": "0.10.0"
   },
   "dependencies": {
     "@lingui/core": "^3.2.2",
