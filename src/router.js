@@ -1,17 +1,21 @@
 const routes = []
+let baseUrl = ''
 
 export function set (path, element, parent) {
   routes.push({ path, element, parent })
 }
 
+export function setBaseUrl (newBaseUrl) {
+  baseUrl = newBaseUrl
+}
+
+const matchPath = (p1, p2) => {
+  if (Array.isArray(p1)) return p1.indexOf(p2) !== -1
+  return p1 === p2
+}
+
 export function apply () {
-  const currentPath = window.location.pathname
-
-  const matchPath = (p1, p2) => {
-    if (Array.isArray(p1)) return p1.indexOf(p2) !== -1
-    return p1 === p2
-  }
-
+  let currentPath = window.location.pathname.replace(baseUrl, '')
   const notFound = routes.every(({ path }) => !matchPath(path, currentPath))
 
   routes.forEach((route) => {
@@ -33,8 +37,7 @@ export function setRouteEl (el, path) {
 }
 
 export function push (path) {
-  const basename = '' // TODO later
-  const newPath = `${basename}${path}`
+  const newPath = `${baseUrl}${path}`
 
   window.history.pushState({ path: newPath }, '', newPath)
 

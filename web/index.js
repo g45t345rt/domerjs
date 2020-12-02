@@ -1,4 +1,5 @@
 import { router } from 'domerjs' // Parcel bundler alias in package.json
+router.setBaseUrl('/domerjs')
 
 import 'regenerator-runtime/runtime' // required for JSDOM
 import 'normalize.css'
