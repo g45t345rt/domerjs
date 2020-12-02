@@ -1,4 +1,4 @@
-import { newEl, helpers, updateEl, updater } from 'domerjs'
+import { newEl, helpers, updateEl, update } from 'domerjs'
 
 import styles from './styles.css'
 
@@ -23,7 +23,7 @@ const listItem = (data) => {
     events: {
       click: () => {
         items = items.filter((item) => item.key !== data.key)
-        updater.apply('items')
+        update('items')
       }
     }
   })
@@ -88,7 +88,7 @@ const listItem = (data) => {
     events: {
       change: () => {
         data.done = checkbox.checked
-        updater.apply('items')
+        update('items')
       }
     }
   })
@@ -113,7 +113,7 @@ const list = newEl('div', {
 
     el.append(...filteredItems.map((item) => listItem(item)))
   },
-  updateOn: 'items'
+  updateKeys: 'items'
 })
 
 export default list

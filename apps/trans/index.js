@@ -1,4 +1,4 @@
-import { newEl, updater, helpers } from 'domerjs'
+import { newEl, helpers, update } from 'domerjs'
 import translations from './trans.json'
 
 const { replaceStringArgs } = helpers
@@ -21,20 +21,20 @@ const elChangeLanguage = newEl('input', {
   events: {
     click: () => {
       currentLanguage === 'en' ? currentLanguage = 'fr' : currentLanguage = 'en'
-      updater.apply('trans')
+      update('trans')
     }
   },
-  updateOn: 'trans'
+  updateKeys: 'trans'
 })
 
 const elTitle = newEl('h1', {
   value: () => getTrans('title'),
-  updateOn: 'trans'
+  updateKeys: 'trans'
 })
 
 const elDescription = newEl('p', {
   value: () => getTrans('description', { first: '__', last: '__' }),
-  updateOn: ['trans']
+  updateKeys: 'trans'
 })
 
 window.document.body.append(elChangeLanguage, elTitle, elDescription)

@@ -1,4 +1,4 @@
-import { newEl, updater } from 'domerjs'
+import { newEl, update } from 'domerjs'
 
 import styles from './styles.css'
 
@@ -16,7 +16,7 @@ const todoInput = newEl('input', {
         if (e.currentTarget.value === '') return
 
         items.unshift({ key: Date.now(), value: e.currentTarget.value, done: false })
-        updater.apply('items')
+        update('items')
       }
     }
   }
@@ -30,7 +30,7 @@ const title = newEl('h1', {
 const data = newEl('div', {
   attrs: { class: styles.data },
   value: () => JSON.stringify(items, null, 2),
-  updateOn: 'items'
+  updateKeys: 'items'
 })
 
 const app = newEl('div', { attrs: { class: styles.app } })

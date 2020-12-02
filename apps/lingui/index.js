@@ -3,7 +3,7 @@ import 'regenerator-runtime/runtime'
 import { setupI18n } from '@lingui/core'
 import { t } from '@lingui/macro'
 
-import { newEl, updater, updateEl } from 'domerjs'
+import { newEl, updateEl, updateSet, update, setElKey } from 'domerjs'
 
 import { messages as en } from './locales/en'
 import { messages as fr } from './locales/fr'
@@ -13,7 +13,7 @@ let trans = setupI18n({
   messages: { en, fr }
 })
 
-updater.set('language', (el) => {
+updateSet('language', (el) => {
   const { dataset } = el
   if (dataset.transId) updateEl(el, trans._(dataset.transId))
   else updateEl(el)
@@ -25,11 +25,12 @@ const elChangeLanguage = newEl('input', {
   events: {
     click: function () {
       trans.activate(trans.locale === 'en' ? 'fr' : 'en')
-      updater.apply('language')
+      update('language')
     }
   }
 })
 
+// this is an example if you use dataset instead of value function to update language
 const elTitle = newEl('h1', {
   dataset: { transId: t`This is a title` },
   //value: () => trans._(t`This is a title`)
@@ -38,11 +39,11 @@ const elTitle = newEl('h1', {
 
 const elDescription = newEl('p', {
   value: () => trans._(t`This is a description.`),
-  updateOn: 'language' // or use updateOn directly
+  updateKeys: 'language'
 })
 
-updater.assign('language', [elChangeLanguage, elTitle])
-updater.apply('language')
+setElKey('language', [elChangeLanguage, elTitle])
+update('language')
 
 window.document.body.append(elChangeLanguage, elTitle, elDescription)
 

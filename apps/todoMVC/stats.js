@@ -1,15 +1,15 @@
-import { newEl, updater } from 'domerjs'
+import { newEl, update } from 'domerjs'
 
 import styles from './styles.css'
 
-import list, { filterKey, items, setFilterKey, setItems } from './list'
+import { filterKey, items, setFilterKey, setItems } from './list'
 
 const displayCount = newEl('div', {
   value: () => {
     const done = items.filter((item) => item.done).length
     return `${items.length} items - ${done} done`
   },
-  updateOn: 'items'
+  updateKeys: 'items'
 })
 
 const clearCompleted = newEl('input', {
@@ -20,7 +20,7 @@ const clearCompleted = newEl('input', {
   events: {
     click: () => {
       setItems(items.filter((item) => !item.done))
-      updater.apply('items')
+      update('items')
     }
   }
 })
@@ -37,11 +37,12 @@ const filterItem = (key, text) => {
     events: {
       click: () => {
         setFilterKey(key)
-        updater.apply('items')
-        updater.apply('filter')
+        update('items')
+        //updateEl(item)
+        update('filter')
       }
     },
-    updateOn: 'filter'
+    updateKeys: 'filter'
   })
 }
 

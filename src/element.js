@@ -1,15 +1,13 @@
 import { nanoid } from 'nanoid'
 import { emptyChilds } from './helpers'
-import * as updater from './updater'
 
 const ID_SIZE = 6
 export let ids = window.__ssr || []
-const elements = []
+const renders = []
 
 let elIndex = 0
 export function newEl (tagName, options = {}) {
-  // value, html
-  const { attrs = {}, events = {}, dataset = {}, classList = [], updateOn } = options
+  const { attrs = {}, events = {}, dataset = {}, classList = [], value, html, updateKeys } = options
   let el = null
 
   if (window.isServer) {
@@ -32,12 +30,6 @@ export function newEl (tagName, options = {}) {
     }
   }
 
-  elements.push({ el, options })
-  elIndex++
-
-  // Render value to element
-  updateEl(el)
-
   // Attributes
   Object.keys(attrs).forEach((key) => el.setAttribute(key, attrs[key]))
 
@@ -51,8 +43,14 @@ export function newEl (tagName, options = {}) {
   // Events
   Object.keys(events).forEach((key) => el.addEventListener(key, events[key]))
 
-  // Attach update keys
-  if (updateOn) updater.assign(updateOn, el)
+  if (updateKeys) setElKey(updateKeys, el)
+
+  // Saving essential information for ssr and updater
+  renders.push({ el, value, html })
+  elIndex++
+
+  // Render value to element
+  updateEl(el)
 
   return el
 }
@@ -61,22 +59,9 @@ export function newElClass (classList, value, tagName = 'div') {
   return newEl(tagName, { classList, value })
 }
 
-function getElementOptions (el, index = false) {
-  const elMatch = (el1, el2) => el1.__id === el2.__id
-  if (index) return elements.findIndex((item) => elMatch(item.el, el))
-  else {
-    const data = elements.find((item) => elMatch(item.el, el))
-    if (data) return data.options
-  }
-}
+const elMatch = (el1, el2) => el1.__id === el2.__id
 
-function setElementOptions (el, newOptions) {
-  const index = getElementOptions(el, true)
-  if (index !== -1) {
-    elements[index].options = { ...elements[index].options, ...newOptions }
-  }
-}
-
+const valueTags = ['INPUT', 'TEXTAREA']
 function renderEl (el, value, html) {
   if (!value) return
 
@@ -107,9 +92,37 @@ function renderEl (el, value, html) {
   el.textContent = value
 }
 
-const valueTags = ['INPUT', 'TEXTAREA']
-export function updateEl (el, newOptions) {
-  if (newOptions) setElementOptions(el, newOptions)
-  const { value, html } = getElementOptions(el)
-  renderEl(el, value, html)
+// updateEl(el, { value: '<div>asdas</div>', html: true })
+export function updateEl (el, value, html) {
+  const render = renders.find((r) => elMatch(r.el, el))
+  if (value) {
+    render.value = value
+    if (value) render.html = html
+  }
+
+  renderEl(el, render.value, render.html)
+}
+
+const updates = []
+const keys = {}
+
+export function setElKey (key, el) {
+  if (Array.isArray(key)) key.forEach((k) => setElKey(k, el))
+  else if (Array.isArray(el)) el.forEach((e) => setElKey(key, e))
+  else updates.push({ key, el })
+}
+
+export function updateSet (key, updateFunc) {
+  keys[key] = { updateFunc }
+}
+
+export function update (key, updateFunc) {
+  let func = updateFunc
+  const update = keys[key]
+  if (update) func = update.updateFunc
+
+  updates.filter((update) => update.key === key).forEach(({ el }) => {
+    if (typeof func === 'function') func(el) // custom update
+    else updateEl(el) // or use element update
+  })
 }
