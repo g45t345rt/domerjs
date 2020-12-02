@@ -117,7 +117,165 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"../../../node_modules/nanoid/url-alphabet/index.js":[function(require,module,exports) {
+})({"../../../src/router.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.set = set;
+exports.setBaseUrl = setBaseUrl;
+exports.currentPath = currentPath;
+exports.apply = apply;
+exports.setRouteEl = setRouteEl;
+exports.push = push;
+var routes = [];
+var baseUrl = '';
+
+function set(path, element, parent) {
+  routes.push({
+    path: path,
+    element: element,
+    parent: parent
+  });
+}
+
+function setBaseUrl(newBaseUrl) {
+  baseUrl = newBaseUrl;
+}
+
+var matchPath = function matchPath(p1, p2) {
+  if (Array.isArray(p1)) return p1.indexOf(p2) !== -1;
+  return p1 === p2;
+};
+
+function currentPath() {
+  return window.location.pathname.replace(baseUrl, '');
+}
+
+function apply() {
+  var cPath = currentPath();
+  var notFound = routes.every(function (_ref) {
+    var path = _ref.path;
+    return !matchPath(path, cPath);
+  });
+  routes.forEach(function (route) {
+    var path = route.path,
+        element = route.element,
+        _route$parent = route.parent,
+        parent = _route$parent === void 0 ? window.document.body : _route$parent;
+
+    if (matchPath(path, cPath) || notFound && matchPath(path, '')) {
+      parent.append(element);
+    } else if (parent.contains(element)) element.remove();
+  });
+}
+
+function setRouteEl(el, path) {
+  if (el.tagName === 'A') el.href = path;
+  el.addEventListener('click', function (e) {
+    e.preventDefault();
+    push(path);
+  });
+  return el;
+}
+
+function push(path) {
+  var newPath = "".concat(baseUrl).concat(path);
+  window.history.pushState({
+    path: newPath
+  }, '', newPath); // Trigger popstate event to update routes
+  //window.dispatchEvent(new Event('popstate'))
+
+  apply(); // Scroll to tag if any 
+
+  var hashIndex = path.indexOf('#');
+
+  if (hashIndex !== -1) {
+    var hash = path.substring(hashIndex + 1);
+    var element = window.document.getElementById(hash);
+    if (element) window.scrollTo(0, element.offsetTop);
+  }
+}
+
+window.addEventListener('popstate', function () {
+  return apply();
+});
+},{}],"../../../src/fetcher.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.setOptions = setOptions;
+exports.attach = attach;
+exports.detach = detach;
+exports.apply = apply;
+exports.get = get;
+exports.cache = void 0;
+var cache = window.__cache || [];
+exports.cache = cache;
+var attachedFetch = [];
+var defaultRefresh = 100000;
+
+function setOptions(options) {
+  if (typeof options.refresh === 'number') defaultRefresh = options.refresh;
+}
+
+function attach(url, func) {
+  var refresh = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultRefresh;
+  attachedFetch.push({
+    url: url,
+    func: func,
+    refresh: refresh
+  });
+}
+
+function detach(url) {
+  var index = attachedFetch.findIndex(function (x) {
+    return x.url === url;
+  });
+  if (index !== -1) attachedFetch.splice(index, 1);
+}
+
+function apply() {
+  var fetches = attachedFetch.map(function (_ref) {
+    var url = _ref.url,
+        func = _ref.func,
+        refresh = _ref.refresh;
+    return get(url, func, refresh);
+  });
+  return Promise.all(fetches);
+}
+
+function get(url, func) {
+  var refresh = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultRefresh;
+  return new Promise(function (resolve) {
+    var cacheItem = cache.find(function (c) {
+      return c.url === url;
+    });
+
+    if (cacheItem && Date.now() - refresh < cacheItem.time) {
+      resolve(func(cacheItem.data));
+      return;
+    }
+
+    fetch(url).then(function (res) {
+      res.json().then(function (data) {
+        if (!cacheItem) cache.push({
+          url: url,
+          data: data,
+          time: Date.now()
+        });else {
+          cacheItem.data = data;
+          cacheItem.time = Date.now();
+        }
+        resolve(func(data));
+      });
+    });
+  });
+}
+},{}],"../../../node_modules/nanoid/url-alphabet/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -243,215 +401,7 @@ var nanoid = function nanoid() {
 };
 
 exports.nanoid = nanoid;
-},{"./url-alphabet/index.js":"../../../node_modules/nanoid/url-alphabet/index.js"}],"../../../src/router.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setRoot = setRoot;
-exports.assign = assign;
-exports.setRouteEl = setRouteEl;
-exports.push = push;
-exports.apply = apply;
-var routes = [];
-var defaultRoot = window.document.body;
-
-function setRoot(newRoot) {
-  defaultRoot = newRoot;
-}
-
-function updateRoutes() {
-  var args = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {
-    i: 0,
-    routeFound: false,
-    lock: []
-  };
-  var root = defaultRoot;
-  var i = args.i;
-  if (i > routes.length - 1) return;
-  var route = routes[i];
-  var path = route.path,
-      el = route.el,
-      parent = route.parent;
-
-  if (path === window.location.pathname || args.updateEmpty) {
-    args.routeFound = true; //args.updateEmpty = false
-
-    if (!root.isEqualNode(parent)) {
-      args.lock.push(parent);
-      if (!root.contains(parent)) root.append(parent); //root.appendChild(parent)
-    }
-
-    args.lock.push(el);
-
-    if (!parent.contains(el)) {
-      parent.append(el); //parent.appendChild(el)
-
-      el.dispatchEvent(new window.Event('routeAttach'));
-    }
-  } else {
-    var isElLock = args.lock.some(function (l) {
-      return el.isEqualNode(l);
-    });
-
-    if (!isElLock && parent.contains(el)) {
-      //parent.removeChild(el)
-      el.remove();
-      el.dispatchEvent(new window.Event('routeDetach'));
-    }
-
-    var isParentLock = args.lock.some(function (l) {
-      return parent.isEqualNode(l);
-    });
-    if (!isParentLock && !root.isEqualNode(parent) && root.contains(parent)) root.removeChild(parent);
-  }
-
-  if (path === '') {
-    var nextRoute = routes[i + 1];
-
-    if (nextRoute && nextRoute.path !== '') {
-      // make sure empty routes are at the end
-      routes.splice(i, 1);
-      routes.push(route);
-      args.i--;
-    } else {
-      if (!args.routeFound) {
-        args.updateEmpty = true;
-        args.i--;
-      }
-    }
-  }
-
-  args.i++;
-  updateRoutes(args);
-}
-
-window.addEventListener('popstate', function () {
-  updateRoutes();
-});
-
-function assign(path, el) {
-  var parent = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultRoot;
-
-  if (Array.isArray(path)) {
-    path.forEach(function (p) {
-      return assign(p, el, parent);
-    });
-  } else routes.push({
-    el: el,
-    path: path,
-    parent: parent
-  });
-}
-
-function setRouteEl(el, path) {
-  if (el.tagName === 'A') el.href = path;
-  el.addEventListener('click', function (e) {
-    e.preventDefault();
-    push(path);
-  });
-  return el;
-}
-
-function push(path) {
-  var basename = ''; // TODO later
-
-  var newPath = "".concat(basename).concat(path);
-  window.history.pushState({
-    path: newPath
-  }, '', newPath); // Trigger popstate event to update routes
-  //window.dispatchEvent(new Event('popstate'))
-
-  updateRoutes(); // Scroll to tag if any 
-
-  var hashIndex = path.indexOf('#');
-
-  if (hashIndex !== -1) {
-    var hash = path.substring(hashIndex + 1);
-    var element = window.document.getElementById(hash);
-    if (element) window.scrollTo(0, element.offsetTop);
-  }
-}
-
-function apply() {
-  updateRoutes();
-}
-},{}],"../../../src/fetcher.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.setOptions = setOptions;
-exports.attach = attach;
-exports.detach = detach;
-exports.apply = apply;
-exports.get = get;
-exports.cache = void 0;
-var cache = window.__cache || [];
-exports.cache = cache;
-var attachedFetch = [];
-var defaultRefresh = 100000;
-
-function setOptions(options) {
-  if (typeof options.refresh === 'number') defaultRefresh = options.refresh;
-}
-
-function attach(url, func) {
-  var refresh = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultRefresh;
-  attachedFetch.push({
-    url: url,
-    func: func,
-    refresh: refresh
-  });
-}
-
-function detach(url) {
-  var index = attachedFetch.findIndex(function (x) {
-    return x.url === url;
-  });
-  if (index !== -1) attachedFetch.splice(index, 1);
-}
-
-function apply() {
-  var fetches = attachedFetch.map(function (_ref) {
-    var url = _ref.url,
-        func = _ref.func,
-        refresh = _ref.refresh;
-    return get(url, func, refresh);
-  });
-  return Promise.all(fetches);
-}
-
-function get(url, func) {
-  var refresh = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : defaultRefresh;
-  return new Promise(function (resolve) {
-    var cacheItem = cache.find(function (c) {
-      return c.url === url;
-    });
-
-    if (cacheItem && Date.now() - refresh < cacheItem.time) {
-      resolve(func(cacheItem.data));
-      return;
-    }
-
-    fetch(url).then(function (res) {
-      res.json().then(function (data) {
-        if (!cacheItem) cache.push({
-          url: url,
-          data: data,
-          time: Date.now()
-        });else {
-          cacheItem.data = data;
-          cacheItem.time = Date.now();
-        }
-        resolve(func(data));
-      });
-    });
-  });
-}
-},{}],"../../../src/helpers.js":[function(require,module,exports) {
+},{"./url-alphabet/index.js":"../../../node_modules/nanoid/url-alphabet/index.js"}],"../../../src/helpers.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -459,6 +409,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.replaceStringArgs = replaceStringArgs;
 exports.applyValue = applyValue;
+exports.emptyChilds = emptyChilds;
 
 function replaceStringArgs(str, args) {
   var newStr = str;
@@ -483,7 +434,191 @@ function applyValue(value) {
 
   return value;
 }
-},{}],"../../../src/updater.js":[function(require,module,exports) {
+
+function emptyChilds(el) {
+  while (el.hasChildNodes()) {
+    el.removeChild(el.lastChild);
+  }
+}
+},{}],"../../../src/element.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.newEl = newEl;
+exports.newElClass = newElClass;
+exports.updateEl = updateEl;
+exports.ids = void 0;
+
+var _nanoid = require("nanoid");
+
+var _helpers = require("./helpers");
+
+var updater = _interopRequireWildcard(require("./updater"));
+
+function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
+
+function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
+
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
+var ID_SIZE = 6;
+var ids = window.__ssr || [];
+exports.ids = ids;
+var elements = [];
+var elIndex = 0;
+
+function newEl(tagName) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  // value, html
+  var _options$attrs = options.attrs,
+      attrs = _options$attrs === void 0 ? {} : _options$attrs,
+      _options$events = options.events,
+      events = _options$events === void 0 ? {} : _options$events,
+      _options$dataset = options.dataset,
+      dataset = _options$dataset === void 0 ? {} : _options$dataset,
+      _options$classList = options.classList,
+      classList = _options$classList === void 0 ? [] : _options$classList,
+      updateOn = options.updateOn;
+  var el = null;
+
+  if (window.isServer) {
+    el = window.document.createElement(tagName);
+    el.__id = (0, _nanoid.nanoid)(ID_SIZE); // Store id definition for client side
+
+    el.dataset.ssrId = el.__id;
+    ids.push({
+      id: el.__id,
+      i: elIndex
+    });
+  } else {
+    var item = ids.find(function (_ref) {
+      var i = _ref.i;
+      return i === elIndex;
+    });
+
+    if (item) {
+      el = window.document.querySelector("[data-ssr-id=\"".concat(item.id, "\"]"));
+      if (el) el.__id = item.id;
+    }
+
+    if (!el) {
+      el = window.document.createElement(tagName);
+      el.__id = (0, _nanoid.nanoid)(ID_SIZE);
+    }
+  }
+
+  elements.push({
+    el: el,
+    options: options
+  });
+  elIndex++; // Render value to element
+
+  updateEl(el); // Attributes
+
+  Object.keys(attrs).forEach(function (key) {
+    return el.setAttribute(key, attrs[key]);
+  }); // Classlist
+
+  if (typeof classList === 'string') el.classList.add(classList);else if (Array.isArray(classList)) classList.forEach(function (key) {
+    return el.classList.add(key);
+  }); // Dataset
+
+  Object.keys(dataset).forEach(function (key) {
+    return el.dataset[key] = dataset[key];
+  }); // Events
+
+  Object.keys(events).forEach(function (key) {
+    return el.addEventListener(key, events[key]);
+  }); // Attach update keys
+
+  if (updateOn) updater.assign(updateOn, el);
+  return el;
+}
+
+function newElClass(classList, value) {
+  var tagName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'div';
+  return newEl(tagName, {
+    classList: classList,
+    value: value
+  });
+}
+
+function getElementOptions(el) {
+  var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+
+  var elMatch = function elMatch(el1, el2) {
+    return el1.__id === el2.__id;
+  };
+
+  if (index) return elements.findIndex(function (item) {
+    return elMatch(item.el, el);
+  });else {
+    var data = elements.find(function (item) {
+      return elMatch(item.el, el);
+    });
+    if (data) return data.options;
+  }
+}
+
+function setElementOptions(el, newOptions) {
+  var index = getElementOptions(el, true);
+
+  if (index !== -1) {
+    elements[index].options = _objectSpread(_objectSpread({}, elements[index].options), newOptions);
+  }
+}
+
+function renderEl(el, value, html) {
+  if (!value) return;
+
+  if (typeof value === 'function') {
+    var funcValue = value(el);
+    if (funcValue) renderEl(el, funcValue, html);
+    return;
+  } // Array or object = element
+
+
+  if (_typeof(value) === 'object') {
+    (0, _helpers.emptyChilds)(el);
+    if (Array.isArray(value)) value.forEach(function (v) {
+      return el.append(v);
+    });else el.append(value);
+    return;
+  }
+
+  if (valueTags.indexOf(el.tagName) !== -1) {
+    el.value = value;
+    return;
+  }
+
+  if (html) {
+    el.innerHTML = value;
+    return;
+  }
+
+  el.textContent = value;
+}
+
+var valueTags = ['INPUT', 'TEXTAREA'];
+
+function updateEl(el, newOptions) {
+  if (newOptions) setElementOptions(el, newOptions);
+
+  var _getElementOptions = getElementOptions(el),
+      value = _getElementOptions.value,
+      html = _getElementOptions.html;
+
+  renderEl(el, value, html);
+}
+},{"nanoid":"../../../node_modules/nanoid/index.browser.js","./helpers":"../../../src/helpers.js","./updater":"../../../src/updater.js"}],"../../../src/updater.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -493,7 +628,7 @@ exports.assign = assign;
 exports.set = set;
 exports.apply = apply;
 
-var _index = require("./index");
+var _element = require("./element");
 
 var updates = [];
 var keys = {};
@@ -524,10 +659,10 @@ function apply(key, updateFunc) {
   }).forEach(function (_ref) {
     var el = _ref.el;
     if (typeof func === 'function') func(el); // custom update
-    else (0, _index.updateEl)(el); // or use element update
+    else (0, _element.updateEl)(el); // or use element update
   });
 }
-},{"./index":"../../../src/index.js"}],"../../../src/ssr.js":[function(require,module,exports) {
+},{"./element":"../../../src/element.js"}],"../../../src/ssr.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -535,7 +670,9 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
-var _index = require("./index");
+var _fetcher = require("./fetcher");
+
+var _element = require("./element");
 
 var _window = window,
     Element = _window.Element;
@@ -559,27 +696,27 @@ var _default = function _default(options) {
       stylesheet = options.stylesheet,
       _options$baseUrl = options.baseUrl,
       baseUrl = _options$baseUrl === void 0 ? 'http://localhost' : _options$baseUrl;
-  var elStyle = (0, _index.newEl)('link', {
+  var elStyle = (0, _element.newEl)('link', {
     attrs: {
       rel: 'stylesheet',
       href: stylesheet
     },
     useSSR: false
   });
-  var elScript = (0, _index.newEl)('script', {
+  var elScript = (0, _element.newEl)('script', {
     attrs: {
       src: src
     },
     useSSR: false
   });
-  var elSSR = (0, _index.newEl)('script', {
+  var elSSR = (0, _element.newEl)('script', {
     attrs: {
       type: 'text/javascript'
     },
-    value: "window.__ssr = ".concat(JSON.stringify(_index.ids)),
+    value: "window.__ssr = ".concat(JSON.stringify(_element.ids)),
     useSSR: false
   });
-  var elCache = (0, _index.newEl)('script', {
+  var elCache = (0, _element.newEl)('script', {
     attrs: {
       type: 'text/javascript'
     },
@@ -594,7 +731,7 @@ var _default = function _default(options) {
     toHtml: function toHtml() {
       var _window2 = window,
           document = _window2.document;
-      (0, _index.updateEl)(elCache, "window.__cache = ".concat(JSON.stringify(_index.fetcher.cache)));
+      (0, _element.updateEl)(elCache, "window.__cache = ".concat(JSON.stringify(_fetcher.cache)));
       console.log(elSSR.parentElement);
       document.head.append(elStyle);
       document.body.append(elSSR, elCache, elScript);
@@ -604,24 +741,43 @@ var _default = function _default(options) {
 };
 
 exports.default = _default;
-},{"./index":"../../../src/index.js"}],"../../../src/index.js":[function(require,module,exports) {
+},{"./fetcher":"../../../src/fetcher.js","./element":"../../../src/element.js"}],"../../../src/index.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.emptyChilds = emptyChilds;
-exports.newEl = newEl;
-exports.updateEl = updateEl;
+Object.defineProperty(exports, "newEl", {
+  enumerable: true,
+  get: function () {
+    return _element.newEl;
+  }
+});
+Object.defineProperty(exports, "updateEl", {
+  enumerable: true,
+  get: function () {
+    return _element.updateEl;
+  }
+});
+Object.defineProperty(exports, "newElClass", {
+  enumerable: true,
+  get: function () {
+    return _element.newElClass;
+  }
+});
+Object.defineProperty(exports, "elements", {
+  enumerable: true,
+  get: function () {
+    return _element.elements;
+  }
+});
 Object.defineProperty(exports, "SSR", {
   enumerable: true,
   get: function () {
     return _ssr.default;
   }
 });
-exports.updater = exports.helpers = exports.fetcher = exports.router = exports.ids = void 0;
-
-var _nanoid = require("nanoid");
+exports.helpers = exports.updater = exports.fetcher = exports.router = void 0;
 
 var router = _interopRequireWildcard(require("./router"));
 
@@ -631,13 +787,15 @@ var fetcher = _interopRequireWildcard(require("./fetcher"));
 
 exports.fetcher = fetcher;
 
+var updater = _interopRequireWildcard(require("./updater"));
+
+exports.updater = updater;
+
 var helpers = _interopRequireWildcard(require("./helpers"));
 
 exports.helpers = helpers;
 
-var updater = _interopRequireWildcard(require("./updater"));
-
-exports.updater = updater;
+var _element = require("./element");
 
 var _ssr = _interopRequireDefault(require("./ssr"));
 
@@ -646,105 +804,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function emptyChilds(el) {
-  while (el.hasChildNodes()) {
-    el.removeChild(el.lastChild);
-  }
-}
-
-var ids = window.__ssr || [];
-exports.ids = ids;
-var elIndex = 0;
-
-function newEl(tagName) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  var el = null;
-  var _options$attrs = options.attrs,
-      attrs = _options$attrs === void 0 ? {} : _options$attrs,
-      _options$events = options.events,
-      events = _options$events === void 0 ? {} : _options$events,
-      _options$dataset = options.dataset,
-      dataset = _options$dataset === void 0 ? {} : _options$dataset,
-      value = options.value,
-      html = options.html,
-      updateOn = options.updateOn,
-      _options$useSSR = options.useSSR,
-      useSSR = _options$useSSR === void 0 ? true : _options$useSSR;
-  var data = {};
-
-  if (useSSR && window.isServer) {
-    el = window.document.createElement(tagName);
-    el.id = (0, _nanoid.nanoid)(5);
-    ids.push({
-      id: el.id,
-      i: elIndex
-    });
-  } else {
-    var item = ids.find(function (_ref) {
-      var i = _ref.i;
-      return i === elIndex;
-    });
-    if (item) el = window.document.getElementById(item.id);
-    if (!el) el = window.document.createElement(tagName);
-  }
-
-  if (window.isServer && !useSSR) data.append = false;
-  elIndex++; //data.ssr = useSSR
-
-  data.render = {
-    value: value,
-    html: html
-  }; //el.render = { value, html }
-
-  el.data = data; // Render value to element
-
-  updateEl(el); // Attributes
-
-  Object.keys(attrs).forEach(function (key) {
-    return el.setAttribute(key, attrs[key]);
-  }); // Dataset
-
-  Object.keys(dataset).forEach(function (key) {
-    return el.dataset[key] = dataset[key];
-  }); // Events
-
-  Object.keys(events).forEach(function (key) {
-    return el.addEventListener(key, events[key]);
-  }); // Attach update keys
-
-  if (updateOn) updater.assign(updateOn, el);
-  return el;
-}
-
-var valueTags = ['INPUT', 'TEXTAREA'];
-
-function updateEl(el, newValue) {
-  var _el$data$render = el.data.render,
-      value = _el$data$render.value,
-      html = _el$data$render.html;
-  if (newValue) value = newValue;
-  if (!value) return;
-
-  if (typeof value === 'function') {
-    var funcValue = value(el);
-    updateEl(el, funcValue);
-    return;
-  }
-
-  if (valueTags.indexOf(el.tagName) !== -1) {
-    el.value = value;
-    return;
-  }
-
-  if (html) {
-    el.innerHTML = value;
-    return;
-  }
-
-  el.textContent = value;
-}
-},{"nanoid":"../../../node_modules/nanoid/index.browser.js","./router":"../../../src/router.js","./fetcher":"../../../src/fetcher.js","./helpers":"../../../src/helpers.js","./updater":"../../../src/updater.js","./ssr":"../../../src/ssr.js"}],"../../../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"./router":"../../../src/router.js","./fetcher":"../../../src/fetcher.js","./updater":"../../../src/updater.js","./helpers":"../../../src/helpers.js","./element":"../../../src/element.js","./ssr":"../../../src/ssr.js"}],"../../../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -817,11 +877,11 @@ var reloadCSS = require('_css_loader');
 module.hot.dispose(reloadCSS);
 module.hot.accept(reloadCSS);
 module.exports = {
-  "modal": "_modal_f9acb",
-  "modalShadow": "_modalShadow_f9acb",
-  "title": "_title_f9acb",
-  "post": "_post_f9acb",
-  "postTitle": "_postTitle_f9acb"
+  "modal": "_modal_1d347",
+  "modalShadow": "_modalShadow_1d347",
+  "title": "_title_1d347",
+  "post": "_post_1d347",
+  "postTitle": "_postTitle_1d347"
 };
 },{"_css_loader":"../../../node_modules/parcel-bundler/src/builtins/css-loader.js"}],"page1.js":[function(require,module,exports) {
 "use strict";
@@ -862,6 +922,7 @@ var _styles = _interopRequireDefault(require("./styles.css"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+var emptyChilds = _src.helpers.emptyChilds;
 var elPage = (0, _src.newEl)('div');
 var elTitle = (0, _src.newEl)('h1', {
   value: 'Page 2 title'
@@ -916,6 +977,7 @@ var modal = function modal(item) {
   var loading = (0, _src.newEl)('div', {
     value: 'loading...'
   });
+  comments.append(loading);
 
   _src.fetcher.get("https://jsonplaceholder.typicode.com/posts/".concat(item.id, "/comments"), function (data) {
     loading.remove();
@@ -928,7 +990,6 @@ var modal = function modal(item) {
     });
   });
 
-  comments.append(loading);
   modal.append(close, title, description, comments);
   modals.append(shadow, modal);
 };
@@ -936,7 +997,7 @@ var modal = function modal(item) {
 var elPosts = (0, _src.newEl)('div'); //if (window.isServer) {
 
 _src.fetcher.attach("https://jsonplaceholder.typicode.com/posts", function (data) {
-  (0, _src.emptyChilds)(elPosts);
+  emptyChilds(elPosts);
   data.forEach(function (item) {
     var elPost = (0, _src.newEl)('div', {
       useSSR: false,
@@ -944,7 +1005,6 @@ _src.fetcher.attach("https://jsonplaceholder.typicode.com/posts", function (data
       html: true,
       events: {
         click: function click(e) {
-          console.log(e.target.textContent);
           modal(item);
         }
       }
@@ -1041,23 +1101,17 @@ var _master = _interopRequireDefault(require("./master"));
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 //import 'regenerator-runtime/runtime'
-var app = (0, _src.newEl)('div', {
-  dataset: {
-    id: 'app'
-  }
-});
+var pages = ['/', '/page1', '/page2'];
 
-_src.router.setRoot(app);
+_src.router.set(pages, _master.default);
 
-_src.router.assign('', _notfound.default);
+_src.router.set(['/', '/page1'], _page.default, _master.default);
 
-_src.router.assign(['/', '/page1'], _page.default, _master.default);
+_src.router.set('/page2', _page2.default, _master.default);
 
-_src.router.assign('/page2', _page2.default, _master.default);
+_src.router.set('', _notfound.default);
 
 _src.fetcher.apply();
-
-window.document.body.append(app);
 },{"../../../src":"../../../src/index.js","./styles.css":"styles.css","./page1":"page1.js","./page2":"page2.js","./notfound":"notfound.js","./master":"master.js"}],"../../../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
@@ -1086,7 +1140,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "60311" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51277" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

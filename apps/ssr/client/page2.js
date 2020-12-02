@@ -1,5 +1,7 @@
-import { emptyChilds, newEl, fetcher } from '../../../src'
+import { newEl, fetcher, helpers } from '../../../src'
 import styles from './styles.css'
+
+const { emptyChilds } = helpers
 
 const elPage = newEl('div')
 
@@ -57,6 +59,8 @@ const modal = (item) => {
 
   const loading = newEl('div', { value: 'loading...' })
 
+  comments.append(loading)
+  
   fetcher.get(`https://jsonplaceholder.typicode.com/posts/${item.id}/comments`, (data) => {
     loading.remove()
     data.forEach(({ email }) => {
@@ -65,7 +69,6 @@ const modal = (item) => {
     })
   })
 
-  comments.append(loading)
   modal.append(close, title, description, comments)
   modals.append(shadow, modal)
 }
@@ -85,7 +88,6 @@ fetcher.attach(`https://jsonplaceholder.typicode.com/posts`, (data) => {
       html: true,
       events: {
         click: (e) => {
-          console.log(e.target.textContent)
           modal(item)
         }
       }

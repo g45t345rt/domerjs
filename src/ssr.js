@@ -1,6 +1,7 @@
 import { cache } from './fetcher'
 import { newEl, updateEl, ids } from './element'
 
+
 const { Element } = window
 const append = Element.prototype.append
 Element.prototype.append = function () {

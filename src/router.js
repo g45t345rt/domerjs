@@ -14,14 +14,18 @@ const matchPath = (p1, p2) => {
   return p1 === p2
 }
 
+export function currentPath () {
+  return window.location.pathname.replace(baseUrl, '')
+}
+
 export function apply () {
-  let currentPath = window.location.pathname.replace(baseUrl, '')
-  const notFound = routes.every(({ path }) => !matchPath(path, currentPath))
+  const cPath = currentPath()
+  const notFound = routes.every(({ path }) => !matchPath(path, cPath))
 
   routes.forEach((route) => {
     const { path, element, parent = window.document.body } = route
 
-    if (matchPath(path, currentPath) || (notFound && matchPath(path, ''))) {
+    if (matchPath(path, cPath) || (notFound && matchPath(path, ''))) {
       parent.append(element)
     } else if (parent.contains(element)) element.remove()
   })

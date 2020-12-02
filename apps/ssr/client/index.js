@@ -10,14 +10,10 @@ import page2 from './page2'
 import notFound from './notfound'
 import master from './master'
 
-const app = newEl('div', { dataset: { id: 'app' } })
-
-router.setRoot(app)
-
-router.assign('', notFound)
-router.assign(['/', '/page1'], page1, master)
-router.assign('/page2', page2, master)
+const pages = ['/', '/page1', '/page2']
+router.set(pages, master)
+router.set(['/', '/page1'], page1, master)
+router.set('/page2', page2, master)
+router.set('', notFound)
 
 fetcher.apply()
-
-window.document.body.append(app)

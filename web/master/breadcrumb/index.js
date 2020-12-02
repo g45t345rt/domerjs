@@ -1,4 +1,4 @@
-import { newEl } from 'domerjs'
+import { newEl, router } from 'domerjs'
 
 import styles from './styles.css'
 
@@ -10,8 +10,8 @@ const data = {
 const breadcrumb = newEl('div', {
   classList: [styles.breadcrumb],
   value: () => {
-    const currentPath = window.location.pathname
-    const paths = currentPath.split('/')
+    const cPath = router.currentPath()
+    const paths = cPath.split('/')
     return paths.map((path) => data[path]).join(' / ')
   }
 })

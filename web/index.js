@@ -1,10 +1,10 @@
-import { router } from 'domerjs' // Parcel bundler alias in package.json
-router.setBaseUrl('/domerjs')
-
+import './global'
 import 'regenerator-runtime/runtime' // required for JSDOM
 import 'normalize.css'
 import './font.css'
 import './styles.css'
+
+import { router } from 'domerjs' // Parcel bundler alias in package.json
 
 import home from './home'
 import doc from './doc'

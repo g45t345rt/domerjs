@@ -11,4 +11,5 @@ const backButton = newEl('button', { value: 'Go to home page' })
 router.setRouteEl(backButton, '/')
 
 notFound.append(title, description, backButton)
+
 export default notFound

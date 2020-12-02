@@ -6,7 +6,6 @@ import { docs, examples, linkEl } from '../links'
 
 let opened = false
 
-// Dropdown
 const dropdown = newEl('div', { classList: [styles.dropdown] })
 const dropdownButton = newEl('button', {
   classList: [styles.dropdownButton],
