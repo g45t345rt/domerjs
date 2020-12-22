@@ -48,7 +48,7 @@ newEl(tagName, options)
 
 ## Is it fast?
 
-There is no virtual dom so it's as fast as DOM itself. Plus, you control what gets updated so you don't have underground logic you don't about that can affect the performance.
+There is no virtual dom so it's as fast as DOM itself. You control/know what gets updated so you don't have any underground logic/loop that can affect the performance.
 
 ## Documentation
 
@@ -56,7 +56,7 @@ Full docs at https://domerjs.com/doc or check out the doc folder in the Github r
 
 ## Server-side rendering
 
-Use JSDOM to mock DOM on the server and on request return the document html.
+Use JSDOM to mock DOM on the server and return the html document during the request.
 
 See the ssr example in the apps folder
 Terminal 1 `npm run apps-ssr-client` Watch & bundle client side code into one js file
