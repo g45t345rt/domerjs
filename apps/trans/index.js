@@ -37,4 +37,4 @@ const elDescription = newEl('p', {
   updateKeys: 'trans'
 })
 
-window.document.body.append(elChangeLanguage, elTitle, elDescription)
+document.body.append(elChangeLanguage, elTitle, elDescription)

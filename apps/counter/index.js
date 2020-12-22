@@ -8,8 +8,8 @@ const elCounter = newEl('div', {
 
 setInterval(() => {
   seconds++
-  //const el2 = window.document.getElementById('counter')
+  //const el2 = document.getElementById('counter')
   updateEl(elCounter)
 }, 1000)
 
-window.document.body.append(elCounter)
+document.body.append(elCounter)

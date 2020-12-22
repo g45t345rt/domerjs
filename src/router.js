@@ -23,7 +23,7 @@ export function apply () {
   const notFound = routes.every(({ path }) => !matchPath(path, cPath))
 
   routes.forEach((route) => {
-    const { path, element, parent = window.document.body } = route
+    const { path, element, parent = document.body } = route
 
     if (matchPath(path, cPath) || (notFound && matchPath(path, ''))) {
       parent.append(element)
@@ -53,7 +53,7 @@ export function push (path) {
   const hashIndex = path.indexOf('#')
   if (hashIndex !== -1) {
     const hash = path.substring(hashIndex + 1)
-    const element = window.document.getElementById(hash)
+    const element = document.getElementById(hash)
     if (element) window.scrollTo(0, element.offsetTop)
   }
 }

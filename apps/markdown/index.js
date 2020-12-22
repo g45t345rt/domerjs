@@ -24,4 +24,4 @@ const elOutput = newEl('div', {
   html: true
 })
 
-window.document.body.append(elTitle, elInputTitle, elInput, elOutputTitle, elOutput)
+document.body.append(elTitle, elInputTitle, elInput, elOutputTitle, elOutput)

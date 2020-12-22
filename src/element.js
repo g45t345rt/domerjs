@@ -11,7 +11,7 @@ export function newEl (tagName, options = {}) {
   let el = null
 
   if (window.isServer) {
-    el = window.document.createElement(tagName)
+    el = document.createElement(tagName)
     el.__id = nanoid(ID_SIZE)
 
     // Store id definition for client side
@@ -20,12 +20,12 @@ export function newEl (tagName, options = {}) {
   } else {
     const item = ids.find(({ i }) => i === elIndex)
     if (item) {
-      el = window.document.querySelector(`[data-ssr-id="${item.id}"]`)
+      el = document.querySelector(`[data-ssr-id="${item.id}"]`)
       if (el) el.__id = item.id
     }
 
     if (!el) {
-      el = window.document.createElement(tagName)
+      el = document.createElement(tagName)
       el.__id = nanoid(ID_SIZE)
     }
   }

@@ -323,7 +323,7 @@ function newEl(tagName) {
   var el = null;
 
   if (window.isServer) {
-    el = window.document.createElement(tagName);
+    el = document.createElement(tagName);
     el.__id = (0, _nanoid.nanoid)(ID_SIZE); // Store id definition for client side
 
     el.dataset.ssrId = el.__id;
@@ -338,12 +338,12 @@ function newEl(tagName) {
     });
 
     if (item) {
-      el = window.document.querySelector("[data-ssr-id=\"".concat(item.id, "\"]"));
+      el = document.querySelector("[data-ssr-id=\"".concat(item.id, "\"]"));
       if (el) el.__id = item.id;
     }
 
     if (!el) {
-      el = window.document.createElement(tagName);
+      el = document.createElement(tagName);
       el.__id = (0, _nanoid.nanoid)(ID_SIZE);
     }
   } // Attributes
@@ -514,7 +514,7 @@ function apply() {
     var path = route.path,
         element = route.element,
         _route$parent = route.parent,
-        parent = _route$parent === void 0 ? window.document.body : _route$parent;
+        parent = _route$parent === void 0 ? document.body : _route$parent;
 
     if (matchPath(path, cPath) || notFound && matchPath(path, '')) {
       parent.append(element);
@@ -544,7 +544,7 @@ function push(path) {
 
   if (hashIndex !== -1) {
     var hash = path.substring(hashIndex + 1);
-    var element = window.document.getElementById(hash);
+    var element = document.getElementById(hash);
     if (element) window.scrollTo(0, element.offsetTop);
   }
 }
@@ -651,7 +651,8 @@ Element.prototype.append = function () {
 var appendChilds = Element.prototype.appendChild;
 
 Element.prototype.appendChild = function () {
-  if (arguments.parentElement) return;
+  if (arguments.parentElement) return; // don't append if child already as a parent
+
   appendChilds.apply(this, arguments);
 };
 
@@ -674,8 +675,7 @@ var _default = function _default(options) {
   var elSSR = (0, _element.newEl)('script', {
     attrs: {
       type: 'text/javascript'
-    },
-    value: "window.__ssr = ".concat(JSON.stringify(_element.ids))
+    }
   });
   var elCache = (0, _element.newEl)('script', {
     attrs: {
@@ -692,7 +692,7 @@ var _default = function _default(options) {
       var _window2 = window,
           document = _window2.document;
       (0, _element.updateEl)(elCache, "window.__cache = ".concat(JSON.stringify(_fetcher.cache)));
-      console.log(elSSR.parentElement);
+      (0, _element.updateEl)(elSSR, "window.__ssr = ".concat(JSON.stringify(_element.ids)));
       document.head.append(elStyle);
       document.body.append(elSSR, elCache, elScript);
       return "<!DOCTYPE html>".concat(document.documentElement.outerHTML);
@@ -947,7 +947,7 @@ var modal = function modal(item) {
 var elPosts = (0, _src.newEl)('div'); //if (window.isServer) {
 
 _src.fetcher.attach("https://jsonplaceholder.typicode.com/posts", function (data) {
-  emptyChilds(elPosts);
+  //emptyChilds(elPosts)
   data.forEach(function (item) {
     var elPost = (0, _src.newEl)('div', {
       value: "<div class=\"".concat(_styles.default.post, "\">\n          <div class=\"").concat(_styles.default.postTitle, "\">").concat(item.title, "</div>\n          <div>").concat(item.body, "</div>\n        </div>"),

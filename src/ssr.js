@@ -9,7 +9,7 @@ Element.prototype.append = function () {
 
 const appendChilds = Element.prototype.appendChild
 Element.prototype.appendChild = function () {
-  if (arguments.parentElement) return
+  if (arguments.parentElement) return // don't append if child already as a parent
   appendChilds.apply(this, arguments)
 }
 
@@ -25,8 +25,7 @@ export default (options) => {
   })
 
   const elSSR = newEl('script', {
-    attrs: { type: 'text/javascript' },
-    value: `window.__ssr = ${JSON.stringify(ids)}`
+    attrs: { type: 'text/javascript' }
   })
 
   const elCache = newEl('script', {
@@ -38,8 +37,8 @@ export default (options) => {
     toHtml () {
       const { document } = window
       updateEl(elCache, `window.__cache = ${JSON.stringify(cache)}`)
+      updateEl(elSSR, `window.__ssr = ${JSON.stringify(ids)}`)
 
-      console.log(elSSR.parentElement)
       document.head.append(elStyle)
       document.body.append(elSSR, elCache, elScript)
 

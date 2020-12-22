@@ -77,7 +77,7 @@ const elPosts = newEl('div')
 
 //if (window.isServer) {
 fetcher.attach(`https://jsonplaceholder.typicode.com/posts`, (data) => {
-  emptyChilds(elPosts)
+  //emptyChilds(elPosts)
   data.forEach(item => {
     const elPost = newEl('div', {
       value: `<div class="${styles.post}">

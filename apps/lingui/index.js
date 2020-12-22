@@ -45,5 +45,5 @@ const elDescription = newEl('p', {
 setElKey('language', [elChangeLanguage, elTitle])
 update('language')
 
-window.document.body.append(elChangeLanguage, elTitle, elDescription)
+document.body.append(elChangeLanguage, elTitle, elDescription)
 
