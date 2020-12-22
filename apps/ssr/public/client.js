@@ -117,7 +117,358 @@ parcelRequire = (function (modules, cache, entry, globalName) {
   }
 
   return newRequire;
-})({"../../../src/router.js":[function(require,module,exports) {
+})({"../../../node_modules/nanoid/url-alphabet/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.urlAlphabet = void 0;
+// This alphabet uses `A-Za-z0-9_-` symbols. The genetic algorithm helped
+// optimize the gzip compression for this alphabet.
+let urlAlphabet = 'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
+exports.urlAlphabet = urlAlphabet;
+},{}],"../../../node_modules/nanoid/index.browser.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+Object.defineProperty(exports, "urlAlphabet", {
+  enumerable: true,
+  get: function () {
+    return _index.urlAlphabet;
+  }
+});
+exports.random = exports.customRandom = exports.customAlphabet = exports.nanoid = void 0;
+
+var _index = require("./url-alphabet/index.js");
+
+// This file replaces `index.js` in bundlers like webpack or Rollup,
+// according to `browser` config in `package.json`.
+if ("development" !== 'production') {
+  // All bundlers will remove this block in the production bundle.
+  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative' && typeof crypto === 'undefined') {
+    throw new Error('React Native does not have a built-in secure random generator. ' + 'If you don’t need unpredictable IDs use `nanoid/non-secure`. ' + 'For secure IDs, import `react-native-get-random-values` ' + 'before Nano ID. If you use Expo, install `expo-random` ' + 'and use `nanoid/async`.');
+  }
+
+  if (typeof msCrypto !== 'undefined' && typeof crypto === 'undefined') {
+    throw new Error('Import file with `if (!window.crypto) window.crypto = window.msCrypto`' + ' before importing Nano ID to fix IE 11 support');
+  }
+
+  if (typeof crypto === 'undefined') {
+    throw new Error('Your browser does not have secure random generator. ' + 'If you don’t need unpredictable IDs, you can use nanoid/non-secure.');
+  }
+}
+
+var random = function random(bytes) {
+  return crypto.getRandomValues(new Uint8Array(bytes));
+};
+
+exports.random = random;
+
+var customRandom = function customRandom(alphabet, size, getRandom) {
+  // First, a bitmask is necessary to generate the ID. The bitmask makes bytes
+  // values closer to the alphabet size. The bitmask calculates the closest
+  // `2^31 - 1` number, which exceeds the alphabet size.
+  // For example, the bitmask for the alphabet size 30 is 31 (00011111).
+  // `Math.clz32` is not used, because it is not available in browsers.
+  var mask = (2 << Math.log(alphabet.length - 1) / Math.LN2) - 1; // Though, the bitmask solution is not perfect since the bytes exceeding
+  // the alphabet size are refused. Therefore, to reliably generate the ID,
+  // the random bytes redundancy has to be satisfied.
+  // Note: every hardware random generator call is performance expensive,
+  // because the system call for entropy collection takes a lot of time.
+  // So, to avoid additional system calls, extra bytes are requested in advance.
+  // Next, a step determines how many random bytes to generate.
+  // The number of random bytes gets decided upon the ID size, mask,
+  // alphabet size, and magic number 1.6 (using 1.6 peaks at performance
+  // according to benchmarks).
+  // `-~f => Math.ceil(f)` if f is a float
+  // `-~i => i + 1` if i is an integer
+
+  var step = -~(1.6 * mask * size / alphabet.length);
+  return function () {
+    var id = '';
+
+    while (true) {
+      var bytes = getRandom(step); // A compact alternative for `for (var i = 0; i < step; i++)`.
+
+      var j = step;
+
+      while (j--) {
+        // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
+        id += alphabet[bytes[j] & mask] || '';
+        if (id.length === size) return id;
+      }
+    }
+  };
+};
+
+exports.customRandom = customRandom;
+
+var customAlphabet = function customAlphabet(alphabet, size) {
+  return customRandom(alphabet, size, random);
+};
+
+exports.customAlphabet = customAlphabet;
+
+var nanoid = function nanoid() {
+  var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 21;
+  var id = '';
+  var bytes = crypto.getRandomValues(new Uint8Array(size)); // A compact alternative for `for (var i = 0; i < step; i++)`.
+
+  while (size--) {
+    // It is incorrect to use bytes exceeding the alphabet size.
+    // The following mask reduces the random byte in the 0-255 value
+    // range to the 0-63 value range. Therefore, adding hacks, such
+    // as empty string fallback or magic numbers, is unneccessary because
+    // the bitmask trims bytes down to the alphabet size.
+    var byte = bytes[size] & 63;
+
+    if (byte < 36) {
+      // `0-9a-z`
+      id += byte.toString(36);
+    } else if (byte < 62) {
+      // `A-Z`
+      id += (byte - 26).toString(36).toUpperCase();
+    } else if (byte < 63) {
+      id += '_';
+    } else {
+      id += '-';
+    }
+  }
+
+  return id;
+};
+
+exports.nanoid = nanoid;
+},{"./url-alphabet/index.js":"../../../node_modules/nanoid/url-alphabet/index.js"}],"../../../src/helpers.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.replaceStringArgs = replaceStringArgs;
+exports.applyValue = applyValue;
+exports.emptyChilds = emptyChilds;
+
+function replaceStringArgs(str, args) {
+  var newStr = str;
+  Object.keys(args).forEach(function (key) {
+    var value = '';
+    if (typeof args[key] === 'function') value = args[key]();else value = args[key];
+    newStr = newStr.replace("{{".concat(key, "}}"), args[key]);
+  });
+  return newStr;
+}
+
+function applyValue(value) {
+  if (typeof value === 'function') {
+    var result = value();
+
+    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+      args[_key - 1] = arguments[_key];
+    }
+
+    return applyValue.apply(void 0, [result].concat(args));
+  }
+
+  return value;
+}
+
+function emptyChilds(el) {
+  while (el.hasChildNodes()) {
+    el.removeChild(el.lastChild);
+  }
+}
+},{}],"../../../src/element.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.newEl = newEl;
+exports.newElClass = newElClass;
+exports.updateEl = updateEl;
+exports.setElKey = setElKey;
+exports.updateSet = updateSet;
+exports.update = update;
+exports.ids = void 0;
+
+var _nanoid = require("nanoid");
+
+var _helpers = require("./helpers");
+
+function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
+
+var ID_SIZE = 6;
+var ids = window.__ssr || [];
+exports.ids = ids;
+var renders = [];
+var elIndex = 0;
+
+function newEl(tagName) {
+  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var _options$attrs = options.attrs,
+      attrs = _options$attrs === void 0 ? {} : _options$attrs,
+      _options$events = options.events,
+      events = _options$events === void 0 ? {} : _options$events,
+      _options$dataset = options.dataset,
+      dataset = _options$dataset === void 0 ? {} : _options$dataset,
+      _options$classList = options.classList,
+      classList = _options$classList === void 0 ? [] : _options$classList,
+      value = options.value,
+      html = options.html,
+      updateKeys = options.updateKeys;
+  var el = null;
+
+  if (window.isServer) {
+    el = window.document.createElement(tagName);
+    el.__id = (0, _nanoid.nanoid)(ID_SIZE); // Store id definition for client side
+
+    el.dataset.ssrId = el.__id;
+    ids.push({
+      id: el.__id,
+      i: elIndex
+    });
+  } else {
+    var item = ids.find(function (_ref) {
+      var i = _ref.i;
+      return i === elIndex;
+    });
+
+    if (item) {
+      el = window.document.querySelector("[data-ssr-id=\"".concat(item.id, "\"]"));
+      if (el) el.__id = item.id;
+    }
+
+    if (!el) {
+      el = window.document.createElement(tagName);
+      el.__id = (0, _nanoid.nanoid)(ID_SIZE);
+    }
+  } // Attributes
+
+
+  Object.keys(attrs).forEach(function (key) {
+    return el.setAttribute(key, attrs[key]);
+  }); // Classlist
+
+  if (typeof classList === 'string') el.classList.add(classList);else if (Array.isArray(classList)) classList.forEach(function (key) {
+    return el.classList.add(key);
+  }); // Dataset
+
+  Object.keys(dataset).forEach(function (key) {
+    return el.dataset[key] = dataset[key];
+  }); // Events
+
+  Object.keys(events).forEach(function (key) {
+    return el.addEventListener(key, events[key]);
+  });
+  if (updateKeys) setElKey(updateKeys, el); // Saving essential information for ssr and updater
+
+  renders.push({
+    el: el,
+    value: value,
+    html: html
+  });
+  elIndex++; // Render value to element
+
+  updateEl(el);
+  return el;
+}
+
+function newElClass(classList, value) {
+  var tagName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'div';
+  return newEl(tagName, {
+    classList: classList,
+    value: value
+  });
+}
+
+var elMatch = function elMatch(el1, el2) {
+  return el1.__id === el2.__id;
+};
+
+var valueTags = ['INPUT', 'TEXTAREA'];
+
+function renderEl(el, value, html) {
+  if (!value) return;
+
+  if (typeof value === 'function') {
+    var funcValue = value(el);
+    if (funcValue) renderEl(el, funcValue, html);
+    return;
+  } // Array or object = element
+
+
+  if (_typeof(value) === 'object') {
+    (0, _helpers.emptyChilds)(el);
+    if (Array.isArray(value)) value.forEach(function (v) {
+      return el.append(v);
+    });else el.append(value);
+    return;
+  }
+
+  if (valueTags.indexOf(el.tagName) !== -1) {
+    el.value = value;
+    return;
+  }
+
+  if (html) {
+    el.innerHTML = value;
+    return;
+  }
+
+  el.textContent = value;
+} // updateEl(el, { value: '<div>asdas</div>', html: true })
+
+
+function updateEl(el, value, html) {
+  var render = renders.find(function (r) {
+    return elMatch(r.el, el);
+  });
+
+  if (value) {
+    render.value = value;
+    if (value) render.html = html;
+  }
+
+  renderEl(el, render.value, render.html);
+}
+
+var updates = [];
+var keys = {};
+
+function setElKey(key, el) {
+  if (Array.isArray(key)) key.forEach(function (k) {
+    return setElKey(k, el);
+  });else if (Array.isArray(el)) el.forEach(function (e) {
+    return setElKey(key, e);
+  });else updates.push({
+    key: key,
+    el: el
+  });
+}
+
+function updateSet(key, updateFunc) {
+  keys[key] = {
+    updateFunc: updateFunc
+  };
+}
+
+function update(key, updateFunc) {
+  var func = updateFunc;
+  var update = keys[key];
+  if (update) func = update.updateFunc;
+  updates.filter(function (update) {
+    return update.key === key;
+  }).forEach(function (_ref2) {
+    var el = _ref2.el;
+    if (typeof func === 'function') func(el); // custom update
+    else updateEl(el); // or use element update
+  });
+}
+},{"nanoid":"../../../node_modules/nanoid/index.browser.js","./helpers":"../../../src/helpers.js"}],"../../../src/router.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -275,394 +626,7 @@ function get(url, func) {
     });
   });
 }
-},{}],"../../../node_modules/nanoid/url-alphabet/index.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.urlAlphabet = void 0;
-// This alphabet uses `A-Za-z0-9_-` symbols. The genetic algorithm helped
-// optimize the gzip compression for this alphabet.
-let urlAlphabet = 'ModuleSymbhasOwnPr-0123456789ABCDEFGHNRVfgctiUvz_KqYTJkLxpZXIjQW';
-exports.urlAlphabet = urlAlphabet;
-},{}],"../../../node_modules/nanoid/index.browser.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-Object.defineProperty(exports, "urlAlphabet", {
-  enumerable: true,
-  get: function () {
-    return _index.urlAlphabet;
-  }
-});
-exports.random = exports.customRandom = exports.customAlphabet = exports.nanoid = void 0;
-
-var _index = require("./url-alphabet/index.js");
-
-// This file replaces `index.js` in bundlers like webpack or Rollup,
-// according to `browser` config in `package.json`.
-if ("development" !== 'production') {
-  // All bundlers will remove this block in the production bundle.
-  if (typeof navigator !== 'undefined' && navigator.product === 'ReactNative' && typeof crypto === 'undefined') {
-    throw new Error('React Native does not have a built-in secure random generator. ' + 'If you don’t need unpredictable IDs use `nanoid/non-secure`. ' + 'For secure IDs, import `react-native-get-random-values` ' + 'before Nano ID. If you use Expo, install `expo-random` ' + 'and use `nanoid/async`.');
-  }
-
-  if (typeof msCrypto !== 'undefined' && typeof crypto === 'undefined') {
-    throw new Error('Import file with `if (!window.crypto) window.crypto = window.msCrypto`' + ' before importing Nano ID to fix IE 11 support');
-  }
-
-  if (typeof crypto === 'undefined') {
-    throw new Error('Your browser does not have secure random generator. ' + 'If you don’t need unpredictable IDs, you can use nanoid/non-secure.');
-  }
-}
-
-var random = function random(bytes) {
-  return crypto.getRandomValues(new Uint8Array(bytes));
-};
-
-exports.random = random;
-
-var customRandom = function customRandom(alphabet, size, getRandom) {
-  // First, a bitmask is necessary to generate the ID. The bitmask makes bytes
-  // values closer to the alphabet size. The bitmask calculates the closest
-  // `2^31 - 1` number, which exceeds the alphabet size.
-  // For example, the bitmask for the alphabet size 30 is 31 (00011111).
-  // `Math.clz32` is not used, because it is not available in browsers.
-  var mask = (2 << Math.log(alphabet.length - 1) / Math.LN2) - 1; // Though, the bitmask solution is not perfect since the bytes exceeding
-  // the alphabet size are refused. Therefore, to reliably generate the ID,
-  // the random bytes redundancy has to be satisfied.
-  // Note: every hardware random generator call is performance expensive,
-  // because the system call for entropy collection takes a lot of time.
-  // So, to avoid additional system calls, extra bytes are requested in advance.
-  // Next, a step determines how many random bytes to generate.
-  // The number of random bytes gets decided upon the ID size, mask,
-  // alphabet size, and magic number 1.6 (using 1.6 peaks at performance
-  // according to benchmarks).
-  // `-~f => Math.ceil(f)` if f is a float
-  // `-~i => i + 1` if i is an integer
-
-  var step = -~(1.6 * mask * size / alphabet.length);
-  return function () {
-    var id = '';
-
-    while (true) {
-      var bytes = getRandom(step); // A compact alternative for `for (var i = 0; i < step; i++)`.
-
-      var j = step;
-
-      while (j--) {
-        // Adding `|| ''` refuses a random byte that exceeds the alphabet size.
-        id += alphabet[bytes[j] & mask] || ''; // `id.length + 1 === size` is a more compact option.
-
-        if (id.length === +size) return id;
-      }
-    }
-  };
-};
-
-exports.customRandom = customRandom;
-
-var customAlphabet = function customAlphabet(alphabet, size) {
-  return customRandom(alphabet, size, random);
-};
-
-exports.customAlphabet = customAlphabet;
-
-var nanoid = function nanoid() {
-  var size = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 21;
-  var id = '';
-  var bytes = crypto.getRandomValues(new Uint8Array(size)); // A compact alternative for `for (var i = 0; i < step; i++)`.
-
-  while (size--) {
-    // It is incorrect to use bytes exceeding the alphabet size.
-    // The following mask reduces the random byte in the 0-255 value
-    // range to the 0-63 value range. Therefore, adding hacks, such
-    // as empty string fallback or magic numbers, is unneccessary because
-    // the bitmask trims bytes down to the alphabet size.
-    var byte = bytes[size] & 63;
-
-    if (byte < 36) {
-      // `0-9a-z`
-      id += byte.toString(36);
-    } else if (byte < 62) {
-      // `A-Z`
-      id += (byte - 26).toString(36).toUpperCase();
-    } else if (byte < 63) {
-      id += '_';
-    } else {
-      id += '-';
-    }
-  }
-
-  return id;
-};
-
-exports.nanoid = nanoid;
-},{"./url-alphabet/index.js":"../../../node_modules/nanoid/url-alphabet/index.js"}],"../../../src/helpers.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.replaceStringArgs = replaceStringArgs;
-exports.applyValue = applyValue;
-exports.emptyChilds = emptyChilds;
-
-function replaceStringArgs(str, args) {
-  var newStr = str;
-  Object.keys(args).forEach(function (key) {
-    var value = '';
-    if (typeof args[key] === 'function') value = args[key]();else value = args[key];
-    newStr = newStr.replace("{{".concat(key, "}}"), args[key]);
-  });
-  return newStr;
-}
-
-function applyValue(value) {
-  if (typeof value === 'function') {
-    var result = value();
-
-    for (var _len = arguments.length, args = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-      args[_key - 1] = arguments[_key];
-    }
-
-    return applyValue.apply(void 0, [result].concat(args));
-  }
-
-  return value;
-}
-
-function emptyChilds(el) {
-  while (el.hasChildNodes()) {
-    el.removeChild(el.lastChild);
-  }
-}
-},{}],"../../../src/element.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.newEl = newEl;
-exports.newElClass = newElClass;
-exports.updateEl = updateEl;
-exports.ids = void 0;
-
-var _nanoid = require("nanoid");
-
-var _helpers = require("./helpers");
-
-var updater = _interopRequireWildcard(require("./updater"));
-
-function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
-
-function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-
-function _typeof(obj) { "@babel/helpers - typeof"; if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
-var ID_SIZE = 6;
-var ids = window.__ssr || [];
-exports.ids = ids;
-var elements = [];
-var elIndex = 0;
-
-function newEl(tagName) {
-  var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  // value, html
-  var _options$attrs = options.attrs,
-      attrs = _options$attrs === void 0 ? {} : _options$attrs,
-      _options$events = options.events,
-      events = _options$events === void 0 ? {} : _options$events,
-      _options$dataset = options.dataset,
-      dataset = _options$dataset === void 0 ? {} : _options$dataset,
-      _options$classList = options.classList,
-      classList = _options$classList === void 0 ? [] : _options$classList,
-      updateOn = options.updateOn;
-  var el = null;
-
-  if (window.isServer) {
-    el = window.document.createElement(tagName);
-    el.__id = (0, _nanoid.nanoid)(ID_SIZE); // Store id definition for client side
-
-    el.dataset.ssrId = el.__id;
-    ids.push({
-      id: el.__id,
-      i: elIndex
-    });
-  } else {
-    var item = ids.find(function (_ref) {
-      var i = _ref.i;
-      return i === elIndex;
-    });
-
-    if (item) {
-      el = window.document.querySelector("[data-ssr-id=\"".concat(item.id, "\"]"));
-      if (el) el.__id = item.id;
-    }
-
-    if (!el) {
-      el = window.document.createElement(tagName);
-      el.__id = (0, _nanoid.nanoid)(ID_SIZE);
-    }
-  }
-
-  elements.push({
-    el: el,
-    options: options
-  });
-  elIndex++; // Render value to element
-
-  updateEl(el); // Attributes
-
-  Object.keys(attrs).forEach(function (key) {
-    return el.setAttribute(key, attrs[key]);
-  }); // Classlist
-
-  if (typeof classList === 'string') el.classList.add(classList);else if (Array.isArray(classList)) classList.forEach(function (key) {
-    return el.classList.add(key);
-  }); // Dataset
-
-  Object.keys(dataset).forEach(function (key) {
-    return el.dataset[key] = dataset[key];
-  }); // Events
-
-  Object.keys(events).forEach(function (key) {
-    return el.addEventListener(key, events[key]);
-  }); // Attach update keys
-
-  if (updateOn) updater.assign(updateOn, el);
-  return el;
-}
-
-function newElClass(classList, value) {
-  var tagName = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : 'div';
-  return newEl(tagName, {
-    classList: classList,
-    value: value
-  });
-}
-
-function getElementOptions(el) {
-  var index = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
-
-  var elMatch = function elMatch(el1, el2) {
-    return el1.__id === el2.__id;
-  };
-
-  if (index) return elements.findIndex(function (item) {
-    return elMatch(item.el, el);
-  });else {
-    var data = elements.find(function (item) {
-      return elMatch(item.el, el);
-    });
-    if (data) return data.options;
-  }
-}
-
-function setElementOptions(el, newOptions) {
-  var index = getElementOptions(el, true);
-
-  if (index !== -1) {
-    elements[index].options = _objectSpread(_objectSpread({}, elements[index].options), newOptions);
-  }
-}
-
-function renderEl(el, value, html) {
-  if (!value) return;
-
-  if (typeof value === 'function') {
-    var funcValue = value(el);
-    if (funcValue) renderEl(el, funcValue, html);
-    return;
-  } // Array or object = element
-
-
-  if (_typeof(value) === 'object') {
-    (0, _helpers.emptyChilds)(el);
-    if (Array.isArray(value)) value.forEach(function (v) {
-      return el.append(v);
-    });else el.append(value);
-    return;
-  }
-
-  if (valueTags.indexOf(el.tagName) !== -1) {
-    el.value = value;
-    return;
-  }
-
-  if (html) {
-    el.innerHTML = value;
-    return;
-  }
-
-  el.textContent = value;
-}
-
-var valueTags = ['INPUT', 'TEXTAREA'];
-
-function updateEl(el, newOptions) {
-  if (newOptions) setElementOptions(el, newOptions);
-
-  var _getElementOptions = getElementOptions(el),
-      value = _getElementOptions.value,
-      html = _getElementOptions.html;
-
-  renderEl(el, value, html);
-}
-},{"nanoid":"../../../node_modules/nanoid/index.browser.js","./helpers":"../../../src/helpers.js","./updater":"../../../src/updater.js"}],"../../../src/updater.js":[function(require,module,exports) {
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.assign = assign;
-exports.set = set;
-exports.apply = apply;
-
-var _element = require("./element");
-
-var updates = [];
-var keys = {};
-
-function assign(key, el) {
-  if (Array.isArray(key)) key.forEach(function (k) {
-    return assign(k, el);
-  });else if (Array.isArray(el)) el.forEach(function (e) {
-    return assign(key, e);
-  });else updates.push({
-    key: key,
-    el: el
-  });
-}
-
-function set(key, updateFunc) {
-  keys[key] = {
-    updateFunc: updateFunc
-  };
-}
-
-function apply(key, updateFunc) {
-  var func = updateFunc;
-  var update = keys[key];
-  if (update) func = update.updateFunc;
-  updates.filter(function (update) {
-    return update.key === key;
-  }).forEach(function (_ref) {
-    var el = _ref.el;
-    if (typeof func === 'function') func(el); // custom update
-    else (0, _element.updateEl)(el); // or use element update
-  });
-}
-},{"./element":"../../../src/element.js"}],"../../../src/ssr.js":[function(require,module,exports) {
+},{}],"../../../src/ssr.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -700,27 +664,23 @@ var _default = function _default(options) {
     attrs: {
       rel: 'stylesheet',
       href: stylesheet
-    },
-    useSSR: false
+    }
   });
   var elScript = (0, _element.newEl)('script', {
     attrs: {
       src: src
-    },
-    useSSR: false
+    }
   });
   var elSSR = (0, _element.newEl)('script', {
     attrs: {
       type: 'text/javascript'
     },
-    value: "window.__ssr = ".concat(JSON.stringify(_element.ids)),
-    useSSR: false
+    value: "window.__ssr = ".concat(JSON.stringify(_element.ids))
   });
   var elCache = (0, _element.newEl)('script', {
     attrs: {
       type: 'text/javascript'
-    },
-    useSSR: false
+    }
   });
   return {
     setUrl: function setUrl(newUrl) {
@@ -747,55 +707,45 @@ exports.default = _default;
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-Object.defineProperty(exports, "newEl", {
-  enumerable: true,
-  get: function () {
-    return _element.newEl;
-  }
-});
-Object.defineProperty(exports, "updateEl", {
-  enumerable: true,
-  get: function () {
-    return _element.updateEl;
-  }
-});
-Object.defineProperty(exports, "newElClass", {
-  enumerable: true,
-  get: function () {
-    return _element.newElClass;
-  }
-});
-Object.defineProperty(exports, "elements", {
-  enumerable: true,
-  get: function () {
-    return _element.elements;
-  }
-});
+var _exportNames = {
+  router: true,
+  fetcher: true,
+  helpers: true,
+  SSR: true
+};
 Object.defineProperty(exports, "SSR", {
   enumerable: true,
   get: function () {
     return _ssr.default;
   }
 });
-exports.helpers = exports.updater = exports.fetcher = exports.router = void 0;
-
-var router = _interopRequireWildcard(require("./router"));
-
-exports.router = router;
-
-var fetcher = _interopRequireWildcard(require("./fetcher"));
-
-exports.fetcher = fetcher;
-
-var updater = _interopRequireWildcard(require("./updater"));
-
-exports.updater = updater;
-
-var helpers = _interopRequireWildcard(require("./helpers"));
-
-exports.helpers = helpers;
+exports.helpers = exports.fetcher = exports.router = void 0;
 
 var _element = require("./element");
+
+Object.keys(_element).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _element[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _element[key];
+    }
+  });
+});
+
+var _router = _interopRequireWildcard(require("./router"));
+
+exports.router = _router;
+
+var _fetcher = _interopRequireWildcard(require("./fetcher"));
+
+exports.fetcher = _fetcher;
+
+var _helpers = _interopRequireWildcard(require("./helpers"));
+
+exports.helpers = _helpers;
 
 var _ssr = _interopRequireDefault(require("./ssr"));
 
@@ -804,7 +754,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 function _getRequireWildcardCache() { if (typeof WeakMap !== "function") return null; var cache = new WeakMap(); _getRequireWildcardCache = function () { return cache; }; return cache; }
 
 function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-},{"./router":"../../../src/router.js","./fetcher":"../../../src/fetcher.js","./updater":"../../../src/updater.js","./helpers":"../../../src/helpers.js","./element":"../../../src/element.js","./ssr":"../../../src/ssr.js"}],"../../../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
+},{"./element":"../../../src/element.js","./router":"../../../src/router.js","./fetcher":"../../../src/fetcher.js","./helpers":"../../../src/helpers.js","./ssr":"../../../src/ssr.js"}],"../../../node_modules/parcel-bundler/src/builtins/bundle-url.js":[function(require,module,exports) {
 var bundleURL = null;
 
 function getBundleURLCached() {
@@ -1000,7 +950,6 @@ _src.fetcher.attach("https://jsonplaceholder.typicode.com/posts", function (data
   emptyChilds(elPosts);
   data.forEach(function (item) {
     var elPost = (0, _src.newEl)('div', {
-      useSSR: false,
       value: "<div class=\"".concat(_styles.default.post, "\">\n          <div class=\"").concat(_styles.default.postTitle, "\">").concat(item.title, "</div>\n          <div>").concat(item.body, "</div>\n        </div>"),
       html: true,
       events: {
@@ -1140,7 +1089,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "51277" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "59359" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

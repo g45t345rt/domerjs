@@ -1,7 +1,6 @@
 import { cache } from './fetcher'
 import { newEl, updateEl, ids } from './element'
 
-
 const { Element } = window
 const append = Element.prototype.append
 Element.prototype.append = function () {
@@ -18,24 +17,20 @@ export default (options) => {
   const { src, stylesheet, baseUrl = 'http://localhost' } = options
 
   const elStyle = newEl('link', {
-    attrs: { rel: 'stylesheet', href: stylesheet },
-    useSSR: false
+    attrs: { rel: 'stylesheet', href: stylesheet }
   })
 
   const elScript = newEl('script', {
-    attrs: { src },
-    useSSR: false
+    attrs: { src }
   })
 
   const elSSR = newEl('script', {
     attrs: { type: 'text/javascript' },
-    value: `window.__ssr = ${JSON.stringify(ids)}`,
-    useSSR: false
+    value: `window.__ssr = ${JSON.stringify(ids)}`
   })
 
   const elCache = newEl('script', {
-    attrs: { type: 'text/javascript' },
-    useSSR: false
+    attrs: { type: 'text/javascript' }
   })
 
   return {

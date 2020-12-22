@@ -80,7 +80,6 @@ fetcher.attach(`https://jsonplaceholder.typicode.com/posts`, (data) => {
   emptyChilds(elPosts)
   data.forEach(item => {
     const elPost = newEl('div', {
-      useSSR: false,
       value: `<div class="${styles.post}">
           <div class="${styles.postTitle}">${item.title}</div>
           <div>${item.body}</div>
